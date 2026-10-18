@@ -406,6 +406,12 @@ class TestActivityTypeMap:
 
         assert 50 in type_map[user_goals_schema.ActivityType.WALK]
 
+    def test_walk_includes_dog_walk_id(self):
+        """Test WALK mapping includes the dog walk activity ID (52)."""
+        type_map = user_goals_utils._ACTIVITY_TYPE_MAP
+
+        assert 52 in type_map[user_goals_schema.ActivityType.WALK]
+
     def test_cardio_includes_climbing_ids(self):
         """Test CARDIO mapping includes rock climbing, bouldering and indoor climbing."""
         type_map = user_goals_utils._ACTIVITY_TYPE_MAP

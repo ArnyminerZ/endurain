@@ -104,6 +104,7 @@ ACTIVITY_ID_TO_NAME = {
     49: "Bouldering",
     50: "Mountaineering",
     51: "Indoor climbing",
+    52: "Dog walk",
     # Add other mappings as needed based on the full list in define_activity_type comments if required
     # "AlpineSki",
     # "BackcountrySki",
@@ -250,6 +251,8 @@ ACTIVITY_NAME_TO_ID.update(
         "rock_climbing": 48,
         "rockclimbing": 48,
         "indoor_climbing": 51,
+        "dog_walk": 52,
+        "dogwalk": 52,
     }
 )
 
@@ -1247,7 +1250,7 @@ def calculate_activity_stats(
         ([1, 2, 3, 34, 40], "run"),
         ([4, 5, 6, 7, 27, 28, 29, 35, 36], "bike"),
         ([8, 9], "swim"),
-        ([11, 31], "walk"),
+        ([11, 31, 52], "walk"),
         ([12], "hike"),
         ([13], "rowing"),
         ([15, 16], "snow_ski"),

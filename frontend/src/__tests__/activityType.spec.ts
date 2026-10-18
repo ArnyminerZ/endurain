@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Bike, Footprints, Sailboat, Waves } from '@lucide/vue'
+import { Bike, Dog, Footprints, Sailboat, Waves } from '@lucide/vue'
 
 import {
   activityBadgeCategory,
@@ -20,6 +20,7 @@ describe('activityTypeToGearType', () => {
     expect(activityTypeToGearType(4)).toBe(GEAR_TYPE.BICYCLE)
     expect(activityTypeToGearType(1)).toBe(GEAR_TYPE.SHOES)
     expect(activityTypeToGearType(11)).toBe(GEAR_TYPE.SHOES)
+    expect(activityTypeToGearType(52)).toBe(GEAR_TYPE.SHOES)
     expect(activityTypeToGearType(8)).toBe(GEAR_TYPE.WETSUIT)
     expect(activityTypeToGearType(21)).toBe(GEAR_TYPE.RACQUET)
     expect(activityTypeToGearType(15)).toBe(GEAR_TYPE.SKIS)
@@ -96,6 +97,7 @@ describe('activityBadgeCategory', () => {
     expect(activityBadgeCategory(8)).toBe('swimming')
     expect(activityBadgeCategory(11)).toBe('hiking')
     expect(activityBadgeCategory(50)).toBe('hiking')
+    expect(activityBadgeCategory(52)).toBe('hiking')
     expect(activityBadgeCategory(21)).toBe('other')
   })
 })
@@ -110,6 +112,15 @@ describe('presentActivityType', () => {
     expect(presentActivityType(4).icon).toBe(Bike)
     expect(presentActivityType(8).icon).toBe(Waves)
     expect(presentActivityType(43).icon).toBe(Sailboat)
+  })
+
+  it('gives dog walks their own icon and label while keeping the walking badge', () => {
+    expect(presentActivityType(52)).toEqual({
+      labelKey: 'activities.types.dogWalk',
+      badge: 'hiking',
+      icon: Dog,
+    })
+    expect(presentActivityType(11).icon).toBe(Footprints)
   })
 
   it('falls back to a generic workout label for unknown types', () => {
