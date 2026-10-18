@@ -1,6 +1,6 @@
 import { computed, type ComputedRef, type MaybeRefOrGetter, toValue } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/vue-query'
 
 import type {
   Activity,
@@ -8,7 +8,7 @@ import type {
   ActivityMedia,
   ActivityOwner,
 } from '@/features/activities/types'
-import type { Gear } from '@/features/gears/types'
+import type { GearGroup } from '@/features/gears/utils/gearGroups'
 import type { Units } from '@/features/activities/utils/format'
 
 import { queryKeys } from '@/services/queryKeys'
@@ -19,6 +19,8 @@ import {
 } from '@/features/config/services/serverSettings'
 import { useAuthStore } from '@/features/auth/stores/auth'
 import { fetchGearsByType } from '@/features/gears/services/gears'
+import { GEAR_TYPE_VALUES } from '@/features/gears/utils/gearType'
+import { groupGearsByType } from '@/features/gears/utils/gearGroups'
 import { fetchActivityOwner } from '@/features/activities/services/activityOwner'
 import {
   deleteActivity,
@@ -200,24 +202,43 @@ export function useActivityExerciseTitlesQuery(enabled: MaybeRefOrGetter<boolean
 }
 
 /**
- * The gears that can be associated with an activity of the given gear type, for
- * the activity gear picker. Gated on authentication and a valid (non-`null`)
- * gear type so non-gear activities never fetch.
+ * Every gear the user owns, grouped by gear type, for the activity gear picker.
+ * Any gear can be assigned to any activity (a ridge can mix climbing shoes,
+ * trainers and boots), so all gear types are fetched; `preferredType` only
+ * decides which group is listed first. Gated on authentication, and on
+ * `enabled` so nothing is fetched until the picker is opened.
  *
- * @param gearType - Reactive numeric gear type, or `null` when the activity
- *   family has no associated gear.
- * @returns The TanStack query result for the matching gears.
+ * @param preferredType - Reactive numeric gear type that suits the activity,
+ *   or `null` when the activity family has no associated gear.
+ * @param enabled - Reactive flag; the queries stay idle while it is `false`.
+ * @returns The non-empty gear groups (preferred type first) and a loading flag.
  */
-export function useActivityGearOptionsQuery(gearType: MaybeRefOrGetter<number | null>) {
+export function useActivityGearOptionsQuery(
+  preferredType: MaybeRefOrGetter<number | null>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
   const auth = useAuthStore()
-  const type = computed(() => toValue(gearType))
 
-  return useQuery<Gear[]>({
-    queryKey: computed(() => queryKeys.gears.byType(type.value ?? 0)),
-    queryFn: ({ signal }) => fetchGearsByType(type.value as number, signal),
-    enabled: computed(() => auth.isAuthenticated && (type.value ?? 0) > 0),
-    staleTime: 5 * 60_000,
+  const results = useQueries({
+    queries: computed(() =>
+      GEAR_TYPE_VALUES.map((gearType) => ({
+        queryKey: queryKeys.gears.byType(gearType),
+        queryFn: ({ signal }: { signal: AbortSignal }) => fetchGearsByType(gearType, signal),
+        enabled: auth.isAuthenticated && toValue(enabled),
+        staleTime: 5 * 60_000,
+      })),
+    ),
   })
+
+  const groups: ComputedRef<GearGroup[]> = computed(() =>
+    groupGearsByType(
+      results.value.flatMap((result) => result.data ?? []),
+      toValue(preferredType),
+    ),
+  )
+  const isLoading = computed(() => results.value.some((result) => result.isLoading))
+
+  return { groups, isLoading }
 }
 
 /**

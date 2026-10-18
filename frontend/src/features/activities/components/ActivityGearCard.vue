@@ -18,6 +18,7 @@ import {
   useSetActivityGearMutation,
 } from '@/features/activities/composables/useActivityDetail'
 import { activityTypeToGearType } from '@/features/activities/utils/activityType'
+import { presentGearType } from '@/features/gears/utils/gearType'
 import { useGearQuery } from '@/features/gears/composables/useGears'
 
 const props = defineProps<{
@@ -35,14 +36,15 @@ const gearId = computed(() => props.activity.gearId)
 // The currently associated gear, for its nickname + deep link. Gated by
 // useGearQuery on a valid id, so it stays idle when no gear is set.
 const { data: currentGear } = useGearQuery(gearId)
-const optionsQuery = useActivityGearOptionsQuery(gearType)
-const options = computed(() => optionsQuery.data.value ?? [])
 
 const setGearMutation = useSetActivityGearMutation()
 const isSaving = computed(() => setGearMutation.isPending.value)
 
 const isPickerOpen = ref(false)
 const isRemoveOpen = ref(false)
+// Any gear can be assigned to any activity; the suited type is listed first.
+const { groups: gearGroups } = useActivityGearOptionsQuery(gearType, isPickerOpen)
+const hasGears = computed(() => gearGroups.value.length > 0)
 const selectedGearId = ref<number | null>(props.activity.gearId)
 
 // Whether the card has anything to show: the activity supports gear, or one is
@@ -89,7 +91,6 @@ async function removeGear(): Promise<void> {
       <h2 class="text-card-heading">{{ t('activities.gear.title') }}</h2>
       <div v-if="activity.gearId" class="flex items-center gap-1">
         <Button
-          v-if="gearType !== null"
           variant="ghost"
           size="sm"
           :aria-label="t('activities.gear.change')"
@@ -118,7 +119,7 @@ async function removeGear(): Promise<void> {
 
     <div v-else class="flex flex-col items-start gap-3">
       <p class="text-hint">{{ t('activities.gear.notSet') }}</p>
-      <Button v-if="gearType !== null" variant="outline" size="sm" @click="isPickerOpen = true">
+      <Button variant="outline" size="sm" @click="isPickerOpen = true">
         <Plus class="size-4" />
         {{ t('activities.gear.add') }}
       </Button>
@@ -144,13 +145,19 @@ async function removeGear(): Promise<void> {
             :disabled="isSaving"
           >
             <option :value="null" disabled>{{ t('activities.gear.selectPlaceholder') }}</option>
-            <option v-for="gear in options" :key="gear.id" :value="gear.id">
-              {{ gear.nickname }}
-            </option>
+            <optgroup
+              v-for="group in gearGroups"
+              :key="group.gearType"
+              :label="t(presentGearType(group.gearType).labelKey)"
+            >
+              <option v-for="gear in group.gears" :key="gear.id" :value="gear.id">
+                {{ gear.nickname }}
+              </option>
+            </optgroup>
           </select>
         </template>
       </FormField>
-      <p v-if="options.length === 0" class="text-hint">{{ t('activities.gear.noGears') }}</p>
+      <p v-if="!hasGears" class="text-hint">{{ t('activities.gear.noGears') }}</p>
     </FormDialog>
 
     <!-- Remove gear -->
