@@ -22,7 +22,8 @@
     "rowing": "Rem i paddle",
     "winterSports": "Esports d'hivern",
     "waterSports": "Esports aquàtics",
-    "skating": "Patinatge"
+    "skating": "Patinatge",
+    "climbing": "Escalada"
   },
   "results": {
     "inactive": "Inactiu"

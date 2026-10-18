@@ -134,7 +134,7 @@
     "changeTitle": "Canvia l'equipament",
     "selectLabel": "Equipament",
     "selectPlaceholder": "Selecciona un equipament",
-    "noGears": "No s'ha trobat equipament compatible. Afegeix equipament des de la pàgina d'equipament.",
+    "noGears": "No s'ha trobat equipament. Afegeix equipament des de la pàgina d'equipament.",
     "save": "Desa",
     "cancel": "Cancel·la",
     "close": "Tanca",
@@ -267,6 +267,10 @@
     "snowShoeing": "Raquetes de neu",
     "inlineSkating": "Patinatge en línia",
     "hiit": "HIIT",
-    "jumpRope": "Saltar corda"
+    "jumpRope": "Saltar corda",
+    "rockClimbing": "Escalada",
+    "bouldering": "Bloc",
+    "mountaineering": "Alpinisme",
+    "indoorClimbing": "Escalada en interior"
   }
 }
