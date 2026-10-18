@@ -1,6 +1,7 @@
 import {
   Activity as ActivityIcon,
   Bike,
+  Dog,
   Dumbbell,
   Footprints,
   Mountain,
@@ -73,6 +74,7 @@ export const ACTIVITY_TYPE_LABEL_KEYS: Record<number, string> = {
   49: 'activities.types.bouldering',
   50: 'activities.types.mountaineering',
   51: 'activities.types.indoorClimbing',
+  52: 'activities.types.dogWalk',
 }
 
 const RUNNING_TYPES = new Set([1, 2, 3, 34, 40])
@@ -80,7 +82,7 @@ const CYCLING_TYPES = new Set([4, 5, 6, 7, 27, 28, 29, 35, 36])
 const SWIMMING_TYPES = new Set([8, 9])
 // 44 (snowshoeing) is intentionally in both walking and snow groups, mirroring
 // v1: it is paced like walking but uses snow gear.
-const WALKING_TYPES = new Set([11, 12, 31, 44, 50])
+const WALKING_TYPES = new Set([11, 12, 31, 44, 50, 52])
 const RACQUET_TYPES = new Set([21, 22, 23, 24, 25, 26, 39])
 const ROWING_TYPES = new Set([13, 42])
 const SNOW_SKIING_TYPES = new Set([15, 16, 44])
@@ -94,6 +96,7 @@ const SURF_TYPE = 33
 const SKATING_TYPE = 45
 const ICE_SKATING_TYPE = 37
 const JUMP_ROPE_TYPE = 47
+const DOG_WALK_TYPE = 52
 const CLIMBING_TYPES = new Set([48, 49, 51])
 const VIRTUAL_TYPES = new Set([3, 7])
 
@@ -155,6 +158,11 @@ export function activityTypeIsSnowSkiing(type: number): boolean {
 /** @returns Whether the type is snowboarding. */
 export function activityTypeIsSnowboarding(type: number): boolean {
   return type === SNOWBOARD_TYPE
+}
+
+/** @returns Whether the type is a dog walk (a walking discipline with its own icon). */
+export function activityTypeIsDogWalk(type: number): boolean {
+  return type === DOG_WALK_TYPE
 }
 
 /** @returns Whether the type is a climbing discipline (rock, bouldering, indoor). */
@@ -331,6 +339,9 @@ export function activityBadgeCategory(type: number): ActivityBadgeType {
  * @returns The icon component.
  */
 export function activityTypeIcon(type: number): LucideIcon {
+  if (activityTypeIsDogWalk(type)) {
+    return Dog
+  }
   if (activityTypeIsRunning(type) || activityTypeIsWalking(type)) {
     return Footprints
   }

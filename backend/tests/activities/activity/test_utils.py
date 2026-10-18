@@ -192,6 +192,7 @@ class TestActivityIdToName:
         assert ACTIVITY_ID_TO_NAME[49] == "Bouldering"
         assert ACTIVITY_ID_TO_NAME[50] == "Mountaineering"
         assert ACTIVITY_ID_TO_NAME[51] == "Indoor climbing"
+        assert ACTIVITY_ID_TO_NAME[52] == "Dog walk"
 
     def test_unknown_id(self):
         from activities.activity.utils import ACTIVITY_ID_TO_NAME

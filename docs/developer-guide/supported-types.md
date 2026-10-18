@@ -56,6 +56,7 @@ The table bellow details the activity types supported by Endurain.
 | Bouldering | 49 |
 | Mountaineering | 50 |
 | Indoor climbing | 51 |
+| Dog walk | 52 |
 
 
 ## Supported gear types
