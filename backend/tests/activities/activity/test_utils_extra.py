@@ -621,6 +621,11 @@ class TestActivityNameToId:
         assert ACTIVITY_NAME_TO_ID["hiit"] == 46
         assert ACTIVITY_NAME_TO_ID["jump_rope"] == 47
         assert ACTIVITY_NAME_TO_ID["jumprope"] == 47
+        assert ACTIVITY_NAME_TO_ID["rock_climbing"] == 48
+        assert ACTIVITY_NAME_TO_ID["climbing"] == 48
+        assert ACTIVITY_NAME_TO_ID["bouldering"] == 49
+        assert ACTIVITY_NAME_TO_ID["mountaineering"] == 50
+        assert ACTIVITY_NAME_TO_ID["indoor_climbing"] == 51
         assert ACTIVITY_NAME_TO_ID["indoor_running"] == 40
 
     def test_unknown_name_not_in_mapping(self):

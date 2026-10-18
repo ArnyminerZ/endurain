@@ -25,6 +25,7 @@ ACTIVITY_TYPE_TO_GEAR_ATTR: dict[int, str] = {
     21: "tennis_gear_id",
     30: "windsurf_gear_id",
     31: "walk_gear_id",
+    50: "hike_gear_id",
 }
 
 

@@ -24,6 +24,9 @@ const activities = [
   { activityType: 32 }, // stand-up paddling -> waterSports
   { activityType: 33 }, // surf -> waterSports
   { activityType: 45 }, // inline skating -> skating
+  { activityType: 48 }, // rock climbing -> climbing
+  { activityType: 49 }, // bouldering -> climbing
+  { activityType: 51 }, // indoor climbing -> climbing
 ]
 
 describe('filterActivitiesByCategory', () => {
@@ -65,6 +68,14 @@ describe('filterActivitiesByCategory', () => {
 
   it('keeps inline skating separate from ice skating', () => {
     expect(filterActivitiesByCategory(activities, 'skating')).toEqual([{ activityType: 45 }])
+  })
+
+  it('groups rock, bouldering, and indoor climbing under climbing', () => {
+    expect(filterActivitiesByCategory(activities, 'climbing')).toEqual([
+      { activityType: 48 },
+      { activityType: 49 },
+      { activityType: 51 },
+    ])
   })
 
   it('exposes a stable, duplicate-free set of category values', () => {

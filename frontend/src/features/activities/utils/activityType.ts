@@ -3,6 +3,7 @@ import {
   Bike,
   Dumbbell,
   Footprints,
+  Mountain,
   MountainSnow,
   Sailboat,
   Snowflake,
@@ -68,6 +69,10 @@ export const ACTIVITY_TYPE_LABEL_KEYS: Record<number, string> = {
   45: 'activities.types.inlineSkating',
   46: 'activities.types.hiit',
   47: 'activities.types.jumpRope',
+  48: 'activities.types.rockClimbing',
+  49: 'activities.types.bouldering',
+  50: 'activities.types.mountaineering',
+  51: 'activities.types.indoorClimbing',
 }
 
 const RUNNING_TYPES = new Set([1, 2, 3, 34, 40])
@@ -75,7 +80,7 @@ const CYCLING_TYPES = new Set([4, 5, 6, 7, 27, 28, 29, 35, 36])
 const SWIMMING_TYPES = new Set([8, 9])
 // 44 (snowshoeing) is intentionally in both walking and snow groups, mirroring
 // v1: it is paced like walking but uses snow gear.
-const WALKING_TYPES = new Set([11, 12, 31, 44])
+const WALKING_TYPES = new Set([11, 12, 31, 44, 50])
 const RACQUET_TYPES = new Set([21, 22, 23, 24, 25, 26, 39])
 const ROWING_TYPES = new Set([13, 42])
 const SNOW_SKIING_TYPES = new Set([15, 16, 44])
@@ -89,6 +94,7 @@ const SURF_TYPE = 33
 const SKATING_TYPE = 45
 const ICE_SKATING_TYPE = 37
 const JUMP_ROPE_TYPE = 47
+const CLIMBING_TYPES = new Set([48, 49, 51])
 const VIRTUAL_TYPES = new Set([3, 7])
 
 /** @returns Whether the type is a running discipline. */
@@ -149,6 +155,11 @@ export function activityTypeIsSnowSkiing(type: number): boolean {
 /** @returns Whether the type is snowboarding. */
 export function activityTypeIsSnowboarding(type: number): boolean {
   return type === SNOWBOARD_TYPE
+}
+
+/** @returns Whether the type is a climbing discipline (rock, bouldering, indoor). */
+export function activityTypeIsClimbing(type: number): boolean {
+  return CLIMBING_TYPES.has(type)
 }
 
 /** @returns Whether the type is inline skating. */
@@ -269,10 +280,11 @@ export function activityTypeUsesPace(type: number): boolean {
 
 /**
  * Activity types with no meaningful distance (gym/structured/indoor sessions):
- * workout, yoga, transition, strength, crossfit, cardio, HIIT, jump rope.
+ * workout, yoga, transition, strength, crossfit, cardio, HIIT, jump rope,
+ * climbing (rock, bouldering, indoor).
  * Racquet sports are also non-distance (handled via {@link activityTypeIsRacquet}).
  */
-const NON_DISTANCE_TYPES = new Set([10, 14, 18, 19, 20, 41, 46, 47])
+const NON_DISTANCE_TYPES = new Set([10, 14, 18, 19, 20, 41, 46, 47, 48, 49, 51])
 
 /**
  * Whether an activity is distance-based (shows distance/pace/elevation) versus
@@ -344,6 +356,9 @@ export function activityTypeIcon(type: number): LucideIcon {
   }
   if (activityTypeIsRacquet(type)) {
     return Dumbbell
+  }
+  if (activityTypeIsClimbing(type)) {
+    return Mountain
   }
   return ActivityIcon
 }

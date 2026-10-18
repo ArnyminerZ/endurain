@@ -100,6 +100,10 @@ ACTIVITY_ID_TO_NAME = {
     45: "Inline skating",
     46: "HIIT",
     47: "Jump rope",
+    48: "Rock climbing",
+    49: "Bouldering",
+    50: "Mountaineering",
+    51: "Indoor climbing",
     # Add other mappings as needed based on the full list in define_activity_type comments if required
     # "AlpineSki",
     # "BackcountrySki",
@@ -242,6 +246,10 @@ ACTIVITY_NAME_TO_ID.update(
         "highintensityintervaltraining": 46,
         "jump_rope": 47,
         "jumprope": 47,
+        "climbing": 48,
+        "rock_climbing": 48,
+        "rockclimbing": 48,
+        "indoor_climbing": 51,
     }
 )
 
