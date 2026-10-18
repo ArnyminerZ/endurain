@@ -1,0 +1,88 @@
+name: Fork - Sync with upstream
+
+# Personal fork only. Merges endurain-project/endurain master into this fork's
+# master once a day, then rebuilds the personal Docker image if anything changed.
+#
+# Pushing a merge that touches .github/workflows needs a token with the
+# `workflows` permission, which GITHUB_TOKEN never has. To cover that case,
+# create a fine-grained PAT (Contents: read/write, Workflows: read/write) for this
+# repository and store it as the SYNC_TOKEN repository secret. Without it the
+# job falls back to GITHUB_TOKEN and fails only when upstream changed workflows.
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: fork-sync-upstream
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  UPSTREAM_REPOSITORY: endurain-project/endurain
+  UPSTREAM_BRANCH: master
+  FORK_BRANCH: master
+
+jobs:
+
+  sync:
+
+    name: Merge upstream into fork
+    if: github.repository != 'endurain-project/endurain'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.merge.outputs.changed }}
+      sha: ${{ steps.merge.outputs.sha }}
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.FORK_BRANCH }}
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN || github.token }}
+
+      - name: Merge upstream
+        id: merge
+        run: |
+          set -eu
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git remote add upstream "https://github.com/${UPSTREAM_REPOSITORY}.git"
+          git fetch upstream "${UPSTREAM_BRANCH}"
+
+          if git merge-base --is-ancestor "upstream/${UPSTREAM_BRANCH}" HEAD; then
+            echo "Fork is already up to date with upstream."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! git merge --no-edit -m "chore: sync with upstream" "upstream/${UPSTREAM_BRANCH}"; then
+            git merge --abort
+            echo "::error::Merge conflict with upstream. Resolve it manually in the fork."
+            exit 1
+          fi
+
+          git push origin "HEAD:${FORK_BRANCH}"
+          {
+            echo "changed=true"
+            echo "sha=$(git rev-parse HEAD)"
+          } >> "$GITHUB_OUTPUT"
+
+  image:
+
+    name: Rebuild personal image
+    needs: sync
+    if: needs.sync.outputs.changed == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/fork-docker-image.yml
+    with:
+      ref: ${{ needs.sync.outputs.sha }}
