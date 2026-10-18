@@ -6596,9 +6596,11 @@ export interface components {
          *         SNOWBOARD: Snowboard (6).
          *         WINDSURF: Windsurf board (7).
          *         WATER_SPORTS_BOARD: Water sports board (8).
+         *         HARNESS: Climbing harness (9).
+         *         CLIMBING_SHOES: Climbing shoes (10).
          * @enum {integer}
          */
-        GearType: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+        GearType: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
         /**
          * GearUpdate
          * @description Schema for updating a gear record.

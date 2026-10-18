@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { Bike, Dumbbell, Footprints, Sailboat } from '@lucide/vue'
+import { Bike, Dumbbell, Footprints, Link, Mountain, Sailboat } from '@lucide/vue'
 
 import type { GearDetailDto, GearDto, GearInput } from '@/features/gears/types'
 
@@ -214,6 +214,14 @@ describe('presentGearType', () => {
     expect(presentGearType(GEAR_TYPE.WATER_SPORTS_BOARD)).toEqual({
       icon: Sailboat,
       labelKey: 'gears.types.waterSportsBoard',
+    })
+    expect(presentGearType(GEAR_TYPE.HARNESS)).toEqual({
+      icon: Link,
+      labelKey: 'gears.types.harness',
+    })
+    expect(presentGearType(GEAR_TYPE.CLIMBING_SHOES)).toEqual({
+      icon: Mountain,
+      labelKey: 'gears.types.climbingShoes',
     })
   })
 

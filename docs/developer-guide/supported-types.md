@@ -71,6 +71,8 @@ The table bellow details the gear types supported by Endurain.
 | snowboard          | 6     | N/A                                     |
 | windsurf           | 7     | N/A                                     |
 | water_sports_board | 8     | Example: stand up paddle and surf board |
+| harness            | 9     | Climbing harness                        |
+| climbing_shoes     | 10    | Used by rock, bouldering and indoor climbing |
 
 
 ## Supported bike component gear types

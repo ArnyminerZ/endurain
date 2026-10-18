@@ -205,6 +205,8 @@ describe('componentTypeListKey', () => {
   it('returns null for families without components', () => {
     expect(componentTypeListKey(GEAR_TYPE.WETSUIT)).toBeNull()
     expect(componentTypeListKey(GEAR_TYPE.WATER_SPORTS_BOARD)).toBeNull()
+    expect(componentTypeListKey(GEAR_TYPE.HARNESS)).toBeNull()
+    expect(componentTypeListKey(GEAR_TYPE.CLIMBING_SHOES)).toBeNull()
   })
 })
 

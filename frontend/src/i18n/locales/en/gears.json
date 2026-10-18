@@ -20,6 +20,8 @@
     "snowboard": "Snowboard",
     "windsurf": "Windsurf board",
     "waterSportsBoard": "Water sports board",
+    "harness": "Climbing harness",
+    "climbingShoes": "Climbing shoes",
     "unknown": "Gear"
   },
   "actions": {

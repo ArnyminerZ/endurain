@@ -4,7 +4,7 @@ import { computed, type HTMLAttributes } from 'vue'
 import { presentGearType } from '@/features/gears/utils/gearType'
 
 const props = defineProps<{
-  /** Numeric gear-type identifier (1–8). */
+  /** Numeric gear-type identifier (1–10). */
   type: number
   class?: HTMLAttributes['class']
 }>()

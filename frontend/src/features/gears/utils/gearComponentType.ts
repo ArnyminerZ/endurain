@@ -8,7 +8,7 @@ export type ComponentTypeListKey = keyof GearComponentTypeLists
  * Maps a numeric gear type to its component-catalogue key, or `null` when the
  * gear family tracks no components (wetsuits, skis, snowboards, boards).
  *
- * @param gearType - The numeric gear-type identifier (1–8).
+ * @param gearType - The numeric gear-type identifier (1–10).
  * @returns The catalogue key, or `null` when the family has no components.
  */
 export function componentTypeListKey(gearType: number): ComponentTypeListKey | null {
@@ -29,7 +29,7 @@ export function componentTypeListKey(gearType: number): ComponentTypeListKey | n
 /**
  * Whether a gear family supports components (and so should offer "add").
  *
- * @param gearType - The numeric gear-type identifier (1–8).
+ * @param gearType - The numeric gear-type identifier (1–10).
  * @returns `true` when the family has a component catalogue.
  */
 export function gearTypeSupportsComponents(gearType: number): boolean {
@@ -40,7 +40,7 @@ export function gearTypeSupportsComponents(gearType: number): boolean {
  * Whether a gear family tracks component wear by **time** (the racquet family)
  * rather than by **distance** (every other family).
  *
- * @param gearType - The numeric gear-type identifier (1–8).
+ * @param gearType - The numeric gear-type identifier (1–10).
  * @returns `true` when wear is measured in time, `false` for distance.
  */
 export function isTimeBasedGear(gearType: number): boolean {
