@@ -11875,9 +11875,10 @@ export interface components {
          *     Attributes:
          *         MANUAL: Manually entered fasting data.
          *         GARMIN: Garmin fitness tracking platform as a data source.
+         *         GADGETBRIDGE: Gadgetbridge Android app as a data source.
          * @enum {string}
          */
-        health__health_fasting__schema__Source: "manual" | "garmin";
+        health__health_fasting__schema__Source: "manual" | "garmin" | "gadgetbridge";
         /**
          * Source
          * @description Enumeration of data sources for poop records.
@@ -11893,18 +11894,20 @@ export interface components {
          *
          *     Attributes:
          *         GARMIN: Sleep data sourced from Garmin devices or services.
+         *         GADGETBRIDGE: Gadgetbridge Android app as a data source.
          * @enum {string}
          */
-        health__health_sleep__schema__Source: "garmin";
+        health__health_sleep__schema__Source: "garmin" | "gadgetbridge";
         /**
          * Source
          * @description An enumeration representing supported sources for the application.
          *
          *     Members:
          *         GARMIN: Garmin health data source
+         *         GADGETBRIDGE: Gadgetbridge Android app as a data source.
          * @enum {string}
          */
-        health__health_steps__schema__Source: "garmin";
+        health__health_steps__schema__Source: "garmin" | "gadgetbridge";
         /**
          * Source
          * @description Enumeration of data sources for water intake records.
@@ -11912,18 +11915,20 @@ export interface components {
          *     Attributes:
          *         MANUAL: Manually entered water intake data.
          *         GARMIN: Garmin fitness tracking platform as a data source.
+         *         GADGETBRIDGE: Gadgetbridge Android app as a data source.
          * @enum {string}
          */
-        health__health_water__schema__Source: "manual" | "garmin";
+        health__health_water__schema__Source: "manual" | "garmin" | "gadgetbridge";
         /**
          * Source
          * @description Enumeration of data sources for health weight records.
          *
          *     Attributes:
          *         GARMIN: Garmin fitness tracking platform as a data source.
+         *         GADGETBRIDGE: Gadgetbridge Android app as a data source.
          * @enum {string}
          */
-        health__health_weight__schema__Source: "garmin";
+        health__health_weight__schema__Source: "garmin" | "gadgetbridge";
         /**
          * Interval
          * @description Recurrence intervals for user goals.
