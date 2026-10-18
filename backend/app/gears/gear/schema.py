@@ -27,6 +27,8 @@ class GearType(IntEnum):
         SNOWBOARD: Snowboard (6).
         WINDSURF: Windsurf board (7).
         WATER_SPORTS_BOARD: Water sports board (8).
+        HARNESS: Climbing harness (9).
+        CLIMBING_SHOES: Climbing shoes (10).
     """
 
     BIKE = 1
@@ -37,6 +39,8 @@ class GearType(IntEnum):
     SNOWBOARD = 6
     WINDSURF = 7
     WATER_SPORTS_BOARD = 8
+    HARNESS = 9
+    CLIMBING_SHOES = 10
 
 
 class GearBase(BaseModel):

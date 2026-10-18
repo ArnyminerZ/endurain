@@ -242,6 +242,9 @@ export function activityTypeToGearType(type: number): number | null {
   if (activityTypeIsStandUpPaddling(type) || activityTypeIsSurf(type)) {
     return GEAR_TYPE.WATER_SPORTS_BOARD
   }
+  if (activityTypeIsClimbing(type)) {
+    return GEAR_TYPE.CLIMBING_SHOES
+  }
   return null
 }
 

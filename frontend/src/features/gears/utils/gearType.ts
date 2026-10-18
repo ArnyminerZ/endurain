@@ -3,7 +3,9 @@ import {
   Droplets,
   Dumbbell,
   Footprints,
+  Link,
   type LucideIcon,
+  Mountain,
   MountainSnow,
   Sailboat,
   Snowflake,
@@ -11,7 +13,7 @@ import {
 } from '@lucide/vue'
 
 /**
- * Numeric gear types, mirroring the backend gear-type identifiers (1–8). Kept
+ * Numeric gear types, mirroring the backend gear-type identifiers (1–10). Kept
  * as a named constant so call sites read by name instead of magic numbers; the
  * wire contract is the integer, so these must stay in sync with the backend.
  */
@@ -24,6 +26,8 @@ export const GEAR_TYPE = {
   SNOWBOARD: 6,
   WINDSURF: 7,
   WATER_SPORTS_BOARD: 8,
+  HARNESS: 9,
+  CLIMBING_SHOES: 10,
 } as const
 
 /** All selectable gear-type values, in display order. */
@@ -36,6 +40,8 @@ export const GEAR_TYPE_VALUES: readonly number[] = [
   GEAR_TYPE.SNOWBOARD,
   GEAR_TYPE.WINDSURF,
   GEAR_TYPE.WATER_SPORTS_BOARD,
+  GEAR_TYPE.HARNESS,
+  GEAR_TYPE.CLIMBING_SHOES,
 ]
 
 /**
@@ -60,6 +66,8 @@ const GEAR_TYPE_PRESENTATION: Record<number, GearTypePresentation> = {
   [GEAR_TYPE.SNOWBOARD]: { icon: Snowflake, labelKey: 'gears.types.snowboard' },
   [GEAR_TYPE.WINDSURF]: { icon: Wind, labelKey: 'gears.types.windsurf' },
   [GEAR_TYPE.WATER_SPORTS_BOARD]: { icon: Sailboat, labelKey: 'gears.types.waterSportsBoard' },
+  [GEAR_TYPE.HARNESS]: { icon: Link, labelKey: 'gears.types.harness' },
+  [GEAR_TYPE.CLIMBING_SHOES]: { icon: Mountain, labelKey: 'gears.types.climbingShoes' },
 }
 
 /** Fallback so an unknown gear type never renders blank. */
@@ -72,7 +80,7 @@ const FALLBACK_PRESENTATION: GearTypePresentation = {
  * Maps a numeric gear type to its icon and label key. Unknown types degrade to
  * a neutral fallback so a new backend type never renders blank.
  *
- * @param gearType - The numeric gear-type identifier (1–8).
+ * @param gearType - The numeric gear-type identifier (1–10).
  * @returns The icon component and i18n label key for the type.
  */
 export function presentGearType(gearType: number): GearTypePresentation {

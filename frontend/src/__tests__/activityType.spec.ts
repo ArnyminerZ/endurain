@@ -27,6 +27,9 @@ describe('activityTypeToGearType', () => {
     expect(activityTypeToGearType(30)).toBe(GEAR_TYPE.WINDSURF)
     expect(activityTypeToGearType(32)).toBe(GEAR_TYPE.WATER_SPORTS_BOARD)
     expect(activityTypeToGearType(33)).toBe(GEAR_TYPE.WATER_SPORTS_BOARD)
+    expect(activityTypeToGearType(48)).toBe(GEAR_TYPE.CLIMBING_SHOES)
+    expect(activityTypeToGearType(49)).toBe(GEAR_TYPE.CLIMBING_SHOES)
+    expect(activityTypeToGearType(51)).toBe(GEAR_TYPE.CLIMBING_SHOES)
   })
 
   it('prefers shoes over snow gear for snowshoeing (type 44, in both groups)', () => {

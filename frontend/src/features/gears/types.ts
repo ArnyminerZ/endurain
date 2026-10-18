@@ -7,7 +7,7 @@ export type GearDto = Schemas['GearRead']
 export type GearDetailDto = Schemas['GearDetailRead']
 
 /**
- * Supported gear-type code (1–8), derived from the backend's generated
+ * Supported gear-type code (1–10), derived from the backend's generated
  * `GearType` schema so a change to the supported set surfaces here as a type
  * error instead of a silent mismatch.
  */
@@ -20,7 +20,7 @@ export type GearType = Schemas['GearType']
  *
  * @property id - Stable unique identifier.
  * @property userId - Owning user id.
- * @property gearType - Numeric gear-type identifier (1–8).
+ * @property gearType - Numeric gear-type identifier (1–10).
  * @property nickname - Display nickname.
  * @property brand - Manufacturer brand, or `null`.
  * @property model - Model name, or `null`.
