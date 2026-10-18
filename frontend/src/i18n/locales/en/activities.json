@@ -139,7 +139,7 @@
     "changeTitle": "Change gear",
     "selectLabel": "Gear",
     "selectPlaceholder": "Select a gear",
-    "noGears": "No compatible gear found. Add gear from the gear page first.",
+    "noGears": "No gear found. Add gear from the gear page first.",
     "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
