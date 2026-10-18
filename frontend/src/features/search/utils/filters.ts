@@ -7,6 +7,7 @@
  */
 
 import {
+  activityTypeIsClimbing,
   activityTypeIsCycling,
   activityTypeIsIceSkating,
   activityTypeIsRacquet,
@@ -71,6 +72,7 @@ export const ACTIVITY_CATEGORY_FILTERS: readonly ActivityCategoryFilter[] = [
       activityTypeIsSurf(type),
   },
   { value: 'skating', matches: activityTypeIsSkating },
+  { value: 'climbing', matches: activityTypeIsClimbing },
 ]
 
 /** Category lookup by `value`, built once for O(1) filtering. */

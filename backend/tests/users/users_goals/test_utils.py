@@ -400,6 +400,19 @@ class TestActivityTypeMap:
 
         assert 47 in type_map[user_goals_schema.ActivityType.CARDIO]
 
+    def test_walk_includes_mountaineering_id(self):
+        """Test WALK mapping includes the mountaineering activity ID (50)."""
+        type_map = user_goals_utils._ACTIVITY_TYPE_MAP
+
+        assert 50 in type_map[user_goals_schema.ActivityType.WALK]
+
+    def test_cardio_includes_climbing_ids(self):
+        """Test CARDIO mapping includes rock climbing, bouldering and indoor climbing."""
+        type_map = user_goals_utils._ACTIVITY_TYPE_MAP
+
+        for type_id in (48, 49, 51):
+            assert type_id in type_map[user_goals_schema.ActivityType.CARDIO]
+
     def test_strength_uses_default_types(self):
         """Test STRENGTH not in map, uses default."""
         type_map = user_goals_utils._ACTIVITY_TYPE_MAP

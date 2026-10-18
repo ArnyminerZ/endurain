@@ -92,6 +92,7 @@ describe('activityBadgeCategory', () => {
     expect(activityBadgeCategory(4)).toBe('cycling')
     expect(activityBadgeCategory(8)).toBe('swimming')
     expect(activityBadgeCategory(11)).toBe('hiking')
+    expect(activityBadgeCategory(50)).toBe('hiking')
     expect(activityBadgeCategory(21)).toBe('other')
   })
 })

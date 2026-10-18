@@ -15,8 +15,8 @@ _ACTIVITY_TYPE_MAP: dict[str, list[int]] = {
     user_goals_schema.ActivityType.RUN.value: [1, 2, 3, 34, 40],
     user_goals_schema.ActivityType.BIKE.value: [4, 5, 6, 7, 27, 28, 29, 35, 36],
     user_goals_schema.ActivityType.SWIM.value: [8, 9],
-    user_goals_schema.ActivityType.WALK.value: [11, 12, 44],
-    user_goals_schema.ActivityType.CARDIO.value: [20, 41, 46, 47],
+    user_goals_schema.ActivityType.WALK.value: [11, 12, 44, 50],
+    user_goals_schema.ActivityType.CARDIO.value: [20, 41, 46, 47, 48, 49, 51],
 }
 
 _DEFAULT_ACTIVITY_TYPES: list[int] = [10, 19]
