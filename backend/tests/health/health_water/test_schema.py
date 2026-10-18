@@ -31,3 +31,4 @@ class TestEnums:
 
         assert Source.MANUAL.value == "manual"
         assert Source.GARMIN.value == "garmin"
+        assert Source.GADGETBRIDGE.value == "gadgetbridge"

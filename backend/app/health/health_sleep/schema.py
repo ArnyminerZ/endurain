@@ -21,9 +21,11 @@ class Source(Enum):
 
     Attributes:
         GARMIN: Sleep data sourced from Garmin devices or services.
+        GADGETBRIDGE: Gadgetbridge Android app as a data source.
     """
 
     GARMIN = "garmin"
+    GADGETBRIDGE = "gadgetbridge"
 
 
 class SleepStageType(Enum):

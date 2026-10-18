@@ -12,9 +12,11 @@ class Source(Enum):
 
     Members:
         GARMIN: Garmin health data source
+        GADGETBRIDGE: Gadgetbridge Android app as a data source.
     """
 
     GARMIN = "garmin"
+    GADGETBRIDGE = "gadgetbridge"
 
 
 class HealthStepsBase(BaseModel):

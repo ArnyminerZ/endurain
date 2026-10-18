@@ -27,10 +27,12 @@ class Source(Enum):
     Attributes:
         MANUAL: Manually entered fasting data.
         GARMIN: Garmin fitness tracking platform as a data source.
+        GADGETBRIDGE: Gadgetbridge Android app as a data source.
     """
 
     MANUAL = "manual"
     GARMIN = "garmin"
+    GADGETBRIDGE = "gadgetbridge"
 
 
 class FastingType(Enum):
