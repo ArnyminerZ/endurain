@@ -20,6 +20,8 @@
     "snowboard": "Snowboard",
     "windsurf": "Taula de windsurf",
     "waterSportsBoard": "Taula d'esports aquàtics",
+    "harness": "Arnès d'escalada",
+    "climbingShoes": "Peus de gat",
     "unknown": "Equipament"
   },
   "actions": {
