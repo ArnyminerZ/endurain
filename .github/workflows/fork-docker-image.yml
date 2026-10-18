@@ -1,0 +1,135 @@
+name: Fork - Build and publish personal Docker image
+
+# Personal fork only. Publishes a multi-arch image to this fork's GitHub
+# Container Registry (ghcr.io/<owner>/<repo>, lowercased). It is reused by
+# fork-sync-upstream.yml after a successful sync.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit or branch to build
+        type: string
+        required: false
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+
+# A sync push and the push trigger can overlap; keep only the latest build.
+concurrency:
+  group: fork-docker-image
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+
+  prepare:
+
+    name: Resolve image name and tag
+    if: github.repository != 'endurain-project/endurain'
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+      tag: ${{ steps.meta.outputs.tag }}
+      sha: ${{ steps.meta.outputs.sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          fetch-depth: 1
+
+      - name: Resolve metadata
+        id: meta
+        run: |
+          set -eu
+          sha="$(git rev-parse HEAD)"
+          {
+            echo "image=ghcr.io/${GITHUB_REPOSITORY,,}"
+            echo "sha=${sha}"
+            echo "tag=sha-${sha:0:7}"
+          } >> "$GITHUB_OUTPUT"
+
+  build-arch-images:
+
+    name: Build ${{ matrix.arch }} image
+    needs: prepare
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    env:
+      IMAGE_NAME: ${{ needs.prepare.outputs.image }}
+      IMAGE_TAG: ${{ needs.prepare.outputs.tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          fetch-depth: 1
+
+      - name: Login to GitHub Container Registry
+        env:
+          REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "${REGISTRY_PASSWORD}" | docker login \
+            --username "${{ github.actor }}" \
+            --password-stdin \
+            ghcr.io
+
+      - name: Build and push architecture image
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -eu
+          docker buildx build \
+            --platform "${PLATFORM}" \
+            --file docker/Dockerfile \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}-${ARCH}" \
+            --push \
+            .
+
+  publish-manifests:
+
+    name: Publish multi-arch manifests
+    needs: [prepare, build-arch-images]
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ needs.prepare.outputs.image }}
+      IMAGE_TAG: ${{ needs.prepare.outputs.tag }}
+
+    steps:
+      - name: Login to GitHub Container Registry
+        env:
+          REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "${REGISTRY_PASSWORD}" | docker login \
+            --username "${{ github.actor }}" \
+            --password-stdin \
+            ghcr.io
+
+      - name: Publish sha and latest manifests
+        run: |
+          set -eu
+          for tag in "${IMAGE_TAG}" latest; do
+            docker buildx imagetools create \
+              --tag "${IMAGE_NAME}:${tag}" \
+              "${IMAGE_NAME}:${IMAGE_TAG}-amd64" \
+              "${IMAGE_NAME}:${IMAGE_TAG}-arm64"
+          done

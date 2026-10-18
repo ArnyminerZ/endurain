@@ -1,3 +1,6 @@
+> [!WARNING]
+> **This is a personal fork of Endurain, for my own use only.** It carries extra changes that are not part of upstream, and **no support is offered to third parties**. Please do not open issues or pull requests here, and do not rely on its Docker image. **The only valid repository is the original one: [endurain-project/endurain](https://github.com/endurain-project/endurain).**
+
 > [!NOTE]
 > **Endurain is on a temporary feature freeze** - The project is not paused. The focus is shifting from new features to strengthening the foundations. More details [here](https://docs.endurain.com/blog/2026/05/23/pausing-new-features-so-endurain-can-keep-growing/)
 
