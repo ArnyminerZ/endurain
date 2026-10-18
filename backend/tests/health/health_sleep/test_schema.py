@@ -271,6 +271,16 @@ class TestSourceEnum:
         # Assert
         assert source.value == "garmin"
 
+    def test_source_enum_gadgetbridge(self):
+        """
+        Test Source enum has GADGETBRIDGE value.
+        """
+        # Arrange & Act
+        source = health_sleep_schema.Source.GADGETBRIDGE
+
+        # Assert
+        assert source.value == "gadgetbridge"
+
     def test_source_enum_use_in_schema(self):
         """
         Test Source enum can be used in HealthSleepBase schema.

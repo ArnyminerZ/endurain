@@ -19,9 +19,11 @@ class Source(Enum):
 
     Attributes:
         GARMIN: Garmin fitness tracking platform as a data source.
+        GADGETBRIDGE: Gadgetbridge Android app as a data source.
     """
 
     GARMIN = "garmin"
+    GADGETBRIDGE = "gadgetbridge"
 
 
 class HealthWeightBase(BaseModel):

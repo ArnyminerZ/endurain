@@ -27,10 +27,12 @@ class Source(Enum):
     Attributes:
         MANUAL: Manually entered water intake data.
         GARMIN: Garmin fitness tracking platform as a data source.
+        GADGETBRIDGE: Gadgetbridge Android app as a data source.
     """
 
     MANUAL = "manual"
     GARMIN = "garmin"
+    GADGETBRIDGE = "gadgetbridge"
 
 
 class HealthWaterBase(BaseModel):
