@@ -450,7 +450,7 @@ def complete_health_fasting(
 
     # Update the record
     db_health_fasting.fast_end_time = complete_data.fast_end_time
-    db_health_fasting.status = complete_data.status
+    db_health_fasting.status = getattr(complete_data.status, "value", complete_data.status)
     db_health_fasting.actual_duration_seconds = actual_duration
     if complete_data.notes:
         db_health_fasting.notes = complete_data.notes
