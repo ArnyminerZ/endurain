@@ -32,7 +32,7 @@ class TestReadPublicServerSettings:
         mock_settings.sso_enabled = False
         mock_settings.local_login_enabled = True
         mock_settings.sso_auto_redirect = False
-        mock_settings.tileserver_url = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        mock_settings.tileserver_url = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         mock_settings.tileserver_attribution = "&copy; OpenStreetMap"
         mock_settings.map_background_color = "#dddddd"
         mock_settings.password_type = "strict"
@@ -53,6 +53,7 @@ class TestReadPublicServerSettings:
         # Ensure sensitive fields are not exposed
         assert "signup_require_admin_approval" not in data
         assert "signup_require_email_verification" not in data
+        assert data["allowed_redirect_schemes"] == ["endurain"]
 
     @patch("modules.server_settings.public_router.server_settings_utils.get_server_settings_or_404")
     def test_read_public_server_settings_not_found(self, mock_get_settings, fast_api_client_public, fast_api_app):
@@ -70,6 +71,25 @@ class TestReadPublicServerSettings:
         assert response.status_code == 404
 
 
+class TestAllowedRedirectSchemes:
+    """Test suite for the allowed_redirect_schemes field of the public schema."""
+
+    def test_reflects_configured_schemes_sorted(self):
+        """Test the field mirrors ALLOWED_REDIRECT_SCHEMES, sorted."""
+        # Arrange
+        schema = server_settings_schema.ServerSettingsReadPublic.model_construct()
+
+        # Act
+        with patch(
+            "modules.server_settings.schema.core_config.settings.ALLOWED_REDIRECT_SCHEMES",
+            {"gadgetbridge", "endurain"},
+        ):
+            schemes = schema.allowed_redirect_schemes
+
+        # Assert
+        assert schemes == ["endurain", "gadgetbridge"]
+
+
 class TestListTileMapsTemplatesPublic:
     """Test suite for list_tile_maps_templates public endpoint."""
 
@@ -81,7 +101,7 @@ class TestListTileMapsTemplatesPublic:
             server_settings_schema.TileMapsTemplate(
                 template_id="openstreetmap",
                 name="OpenStreetMap",
-                url_template="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 attribution="&copy; OpenStreetMap",
                 map_background_color="#e8e8e8",
                 requires_api_key_frontend=False,
