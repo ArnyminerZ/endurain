@@ -47,12 +47,12 @@ Table below shows supported environment variables. Variables marked with optiona
 | SESSION_ABSOLUTE_TIMEOUT_HOURS | 24 | Yes | Time in hours |
 | BEHIND_PROXY | false | Yes | Change to true if behind reverse proxy |
 | ENVIRONMENT | production | Yes | `production`, `demo` and `development` allowed. `development` allows connections from localhost:8080 and localhost:5173 at the CORS level. `demo` equals to `production` except it does not return user sessions. **`production` and `demo` set the `Secure` flag on all authentication cookies (refresh token and OAuth/SSO session), so Endurain must be served over HTTPS (directly or via a reverse proxy terminating TLS) for login, session refresh, and SSO to work** |
-| SMTP_HOST | No default set | Yes | The SMTP host of your email provider. Example `smtp.protonmail.ch` |
+| SMTP_HOST | No default set | Yes | The SMTP host of your email provider. Example `smtp.protonmail.ch`. If the SMTP settings are invalid, email is disabled and a warning naming the setting is logged at startup. Failed emails are only retried when `JOBS_ENABLED=true` |
 | SMTP_PORT | 587 | Yes | The SMTP port of your email provider. Default is 587 |
 | SMTP_USERNAME | No default set | Yes | The username of your SMTP email provider, probably your email address |
 | SMTP_PASSWORD | No default set | Yes | The password of your SMTP email provider. Some providers allow the use of your account password, others require the creation of an app password. Please refer to your provider documentation. Alternatively, use `SMTP_PASSWORD_FILE` for Docker secrets |
-| SMTP_FROM | No default set | Yes | Sets the "From" address on outgoing emails. If unset, it is auto-detected (usually `SMTP_USERNAME`). Set this when your provider requires a verified sender that differs from the login username (e.g. Brevo) |
-| SMTP_SECURE | true | Yes | By default it uses secure communications. Accepted values are `true` and `false` |
+| SMTP_FROM | No default set | Yes | Sets the "From" address on outgoing emails. If unset, `SMTP_USERNAME` is used. Accepts `address` or `Name <address>`; a bare address is sent as `Endurain <address>`. Set this when your provider requires a verified sender that differs from the login username (e.g. Brevo) |
+| SMTP_SECURE | true | Yes | By default it uses secure communications. Accepted values are `true` and `false`. `false` (no TLS) is only allowed for a private or loopback `SMTP_HOST` and cannot be combined with `SMTP_USERNAME`/`SMTP_PASSWORD` |
 | SMTP_SECURE_TYPE | starttls | Yes | If SMTP_SECURE is set you can set the communication type. Accepted values are `starttls` and `ssl` |
 | LOG_LEVEL | info | Yes | Supported levels: critical, error, warning, info, debug, trace |
 | ALLOWED_REDIRECT_SCHEMES | `endurain` | Yes | Comma-separated list of custom URI schemes allowed as SSO redirect targets for mobile apps using the system browser (e.g., `endurain,gadgetbridge`). Defaults to `endurain` when unset. If set, only the configured schemes are allowed (no implicit merge with `endurain`). Only relative paths (e.g., `/dashboard`) are accepted when no custom scheme is used. External `http`/`https` URLs are always rejected regardless of this setting. See [Mobile SSO with PKCE](../integrate/oauth-sso-pkce.md#mobile-sso-with-pkce) |
@@ -229,3 +229,23 @@ It is possible (v0.10.0 or higher) to personalize the login image in the login p
  - Set the image in the server settings zone of the settings page
  - A square image is expected. Default one uses 1000px vs 1000px
 
+
+## Map tile server
+
+Administrators choose the map tiles in the server settings page, under the maps section: a preset, or a custom tile URL with its attribution. A custom URL must use `https://` (`http://` is accepted only for `localhost`) and contain the `{z}`, `{x}` and `{y}` placeholders.
+
+Two parts of Endurain request tiles, and they treat the URL and the API key differently:
+
+- **Maps in the browser** use the tile URL as it is saved. The URL is part of the public server settings, which can be read without signing in, and the browser sends it to the tile provider. Anything written in the URL, including a key, is therefore visible to anyone who can reach the server.
+- **Map thumbnails** are rendered by the backend. It uses the tile URL and, if set, the **Tile server API key** field. The key is stored encrypted and is never sent to the browser.
+
+How the backend sends the key for thumbnails:
+
+| Tile URL | Key sent as |
+| --- | --- |
+| `stadiamaps.com` | `Authorization: Stadia-Auth <key>` header. Without a key, thumbnails are skipped. |
+| Any other host | `api_key=<key>` query parameter, added to the tile URL. Thumbnails are skipped if the URL is not `https://`. |
+
+Only Stadia Maps is sent the key in a header. For any other provider the parameter name is always `api_key`. Many providers document a different name for their key, for example `key`, `apikey`, `apiKey`, `access_token` or `access-token`, so a key entered in the field may not be accepted. For those providers, leave the **Tile server API key** field empty and write the key into the tile URL with the parameter name the provider documents, for example `https://tiles.example.com/{z}/{x}/{y}.png?key=YOUR_KEY`. Check your provider's documentation for the exact name.
+
+Putting a key in the URL has a cost: the key is stored unencrypted in the server settings and is exposed as described above. Keys in a URL query string can also appear in the provider's access logs and in the logs of proxies between Endurain and the provider. Use a key that can only read tiles, if your provider offers one. Endurain does not write the tile URL to its own log when a thumbnail fails, only the error type.
