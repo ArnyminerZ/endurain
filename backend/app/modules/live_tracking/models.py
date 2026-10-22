@@ -123,6 +123,9 @@ class LivePoint(Base):
         cadence: Cadence in rpm/spm.
         temperature: Ambient temperature in degrees Celsius.
         skin_temperature: Skin temperature in degrees Celsius.
+        gadget_battery: Battery of the recording gadget (e.g. the watch), in percent.
+        phone_battery: Battery of the phone relaying the data, in percent.
+        phone_signal: Phone mobile signal level, 0 (none) to 4 (great).
     """
 
     __tablename__ = "live_points"
@@ -151,6 +154,15 @@ class LivePoint(Base):
     )
     skin_temperature: Mapped[float | None] = mapped_column(
         Float, nullable=True, comment="Skin temperature in degrees Celsius"
+    )
+    gadget_battery: Mapped[int | None] = mapped_column(
+        SmallInteger, nullable=True, comment="Battery of the recording gadget in percent"
+    )
+    phone_battery: Mapped[int | None] = mapped_column(
+        SmallInteger, nullable=True, comment="Battery of the relaying phone in percent"
+    )
+    phone_signal: Mapped[int | None] = mapped_column(
+        SmallInteger, nullable=True, comment="Phone mobile signal level, 0 (none) to 4 (great)"
     )
 
 

@@ -34,6 +34,9 @@ class LivePointIn(BaseModel):
         cadence: Cadence.
         temperature: Ambient temperature in degrees Celsius.
         skin_temperature: Skin temperature in degrees Celsius.
+        gadget_battery: Battery of the recording gadget (e.g. the watch), in percent.
+        phone_battery: Battery of the phone relaying the data, in percent.
+        phone_signal: Phone mobile signal level, 0 (none) to 4 (great).
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -47,6 +50,9 @@ class LivePointIn(BaseModel):
     cadence: int | None = Field(default=None, ge=0, le=300)
     temperature: float | None = Field(default=None, ge=-90, le=80)
     skin_temperature: float | None = Field(default=None, ge=-20, le=60)
+    gadget_battery: int | None = Field(default=None, ge=0, le=100)
+    phone_battery: int | None = Field(default=None, ge=0, le=100)
+    phone_signal: int | None = Field(default=None, ge=0, le=4)
 
 
 class LivePointsPush(BaseModel):
@@ -75,6 +81,9 @@ class LivePointRead(BaseModel):
     cadence: int | None = None
     temperature: float | None = None
     skin_temperature: float | None = None
+    gadget_battery: int | None = None
+    phone_battery: int | None = None
+    phone_signal: int | None = None
 
     _utc = field_validator("recorded_at")(_as_utc)
 

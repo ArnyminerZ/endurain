@@ -97,3 +97,61 @@ const MIN_STALE_SECONDS = 15
 export function staleThresholdSeconds(updateIntervalSeconds: number): number {
   return Math.max(MIN_STALE_SECONDS, Math.ceil(updateIntervalSeconds) * STALE_INTERVALS)
 }
+
+/** The device-status fields a point may carry. */
+export type DeviceStatusKey = 'gadget_battery' | 'phone_battery' | 'phone_signal'
+
+/** Battery percent at or below which a battery is flagged as low. */
+export const LOW_BATTERY_PERCENT = 20
+/** Battery percent at or below which a battery is flagged as critical. */
+export const CRITICAL_BATTERY_PERCENT = 10
+/** Signal level (0-4) at or below which the phone signal is flagged as weak. */
+export const WEAK_SIGNAL_LEVEL = 1
+
+/**
+ * Finds the last value the client reported for a status field. Clients send
+ * battery and signal only now and then, so the newest point usually lacks them
+ * and the viewer has to look back to the most recent point that carried one.
+ *
+ * @param points - The accumulated track, oldest first.
+ * @param key - The status field to look up.
+ * @returns The most recent reported value, or `null` when it was never sent.
+ */
+export function lastKnown(points: readonly LivePoint[], key: DeviceStatusKey): number | null {
+  for (let index = points.length - 1; index >= 0; index -= 1) {
+    const value = points[index]?.[key]
+    if (value !== null && value !== undefined) {
+      return value
+    }
+  }
+  return null
+}
+
+/** How worrying a status reading is. */
+export type StatusSeverity = 'ok' | 'low' | 'critical'
+
+/**
+ * Classifies a battery percentage.
+ *
+ * @param percent - Battery level, 0-100.
+ * @returns `critical` at or below 10 %, `low` at or below 20 %, otherwise `ok`.
+ */
+export function batterySeverity(percent: number): StatusSeverity {
+  if (percent <= CRITICAL_BATTERY_PERCENT) {
+    return 'critical'
+  }
+  return percent <= LOW_BATTERY_PERCENT ? 'low' : 'ok'
+}
+
+/**
+ * Classifies a phone signal level.
+ *
+ * @param level - Signal level, 0 (none) to 4 (great).
+ * @returns `critical` with no signal, `low` when weak, otherwise `ok`.
+ */
+export function signalSeverity(level: number): StatusSeverity {
+  if (level <= 0) {
+    return 'critical'
+  }
+  return level <= WEAK_SIGNAL_LEVEL ? 'low' : 'ok'
+}

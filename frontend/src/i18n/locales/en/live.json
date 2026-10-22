@@ -19,7 +19,10 @@
     "elevation": "Elevation",
     "cadence": "Cadence",
     "temperature": "Temperature",
-    "skinTemperature": "Skin temperature"
+    "skinTemperature": "Skin temperature",
+    "gadgetBattery": "Gadget battery",
+    "phoneBattery": "Phone battery",
+    "phoneSignal": "Phone signal"
   },
   "ended": {
     "title": "This live tracking has ended",
@@ -28,5 +31,16 @@
   "error": {
     "title": "Couldn't load live tracking",
     "message": "Check your connection and try again."
+  },
+  "signalValue": "{level}/4",
+  "devices": {
+    "gadget": "Gadget",
+    "phone": "Phone"
+  },
+  "alerts": {
+    "batteryLow": "{device} battery low: {percent}%",
+    "batteryCritical": "{device} battery critically low: {percent}%",
+    "weakSignal": "Weak phone signal",
+    "noSignal": "No phone signal"
   }
 }

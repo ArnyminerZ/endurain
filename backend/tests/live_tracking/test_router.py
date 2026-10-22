@@ -112,6 +112,34 @@ class TestLifecycle:
         token = started["share_url"].rsplit("/live/", 1)[1]
         assert client.get(f"/public/live/{token}").json()["update_interval_seconds"] == 45
 
+    def test_device_status_round_trips_to_the_viewer(self, client, now):
+        started = _start(client)
+        token = started["share_url"].rsplit("/live/", 1)[1]
+        point = {
+            "recorded_at": (now - timedelta(seconds=5)).isoformat(),
+            "latitude": 39.0,
+            "longitude": -0.5,
+            "gadget_battery": 62,
+            "phone_battery": 18,
+            "phone_signal": 1,
+        }
+        assert (
+            client.post(f"/live/sessions/{started['session']['id']}/points", json={"points": [point]}).status_code
+            == 200
+        )
+        latest = client.get(f"/public/live/{token}").json()["latest"]
+        assert (latest["gadget_battery"], latest["phone_battery"], latest["phone_signal"]) == (62, 18, 1)
+
+    @pytest.mark.parametrize(
+        "extra",
+        [{"gadget_battery": 101}, {"phone_battery": -1}, {"phone_signal": 5}, {"phone_signal": -1}],
+    )
+    def test_rejects_out_of_range_device_status(self, client, now, extra):
+        started = _start(client)
+        point = {"recorded_at": now.isoformat(), "latitude": 1, "longitude": 1, **extra}
+        response = client.post(f"/live/sessions/{started['session']['id']}/points", json={"points": [point]})
+        assert response.status_code == 422
+
     def test_rejects_implausible_temperatures(self, client, now):
         started = _start(client)
         url = f"/live/sessions/{started['session']['id']}/points"

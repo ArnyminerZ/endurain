@@ -3,10 +3,13 @@ import { describe, expect, it } from 'vitest'
 import type { LivePoint } from '@/features/live/types'
 
 import {
+  batterySeverity,
   coarseDuration,
+  lastKnown,
   mergePoints,
   newestTimestamp,
   secondsSince,
+  signalSeverity,
   staleThresholdSeconds,
   toGeoPoints,
 } from '@/features/live/utils/liveTrack'
@@ -78,6 +81,42 @@ describe('staleThresholdSeconds', () => {
   it('never drops below the floor', () => {
     expect(staleThresholdSeconds(1)).toBe(15)
     expect(staleThresholdSeconds(5)).toBe(15)
+  })
+})
+
+describe('lastKnown', () => {
+  it('looks back to the most recent point that carried the field', () => {
+    const points = [
+      point(0, { phone_battery: 80 }),
+      point(10, { phone_battery: 75 }),
+      point(20),
+      point(30),
+    ]
+    expect(lastKnown(points, 'phone_battery')).toBe(75)
+  })
+
+  it('is null when the client never sent it, and keeps a reported zero', () => {
+    expect(lastKnown([point(0), point(10)], 'gadget_battery')).toBeNull()
+    expect(lastKnown([point(0, { phone_signal: 0 }), point(10)], 'phone_signal')).toBe(0)
+  })
+})
+
+describe('batterySeverity', () => {
+  it('flags low and critical levels', () => {
+    expect(batterySeverity(55)).toBe('ok')
+    expect(batterySeverity(20)).toBe('low')
+    expect(batterySeverity(11)).toBe('low')
+    expect(batterySeverity(10)).toBe('critical')
+    expect(batterySeverity(0)).toBe('critical')
+  })
+})
+
+describe('signalSeverity', () => {
+  it('flags weak and missing signal', () => {
+    expect(signalSeverity(4)).toBe('ok')
+    expect(signalSeverity(2)).toBe('ok')
+    expect(signalSeverity(1)).toBe('low')
+    expect(signalSeverity(0)).toBe('critical')
   })
 })
 

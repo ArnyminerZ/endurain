@@ -19,7 +19,10 @@
     "elevation": "Altitud",
     "cadence": "Cadencia",
     "temperature": "Temperatura",
-    "skinTemperature": "Temperatura de la piel"
+    "skinTemperature": "Temperatura de la piel",
+    "gadgetBattery": "Batería del dispositivo",
+    "phoneBattery": "Batería del móvil",
+    "phoneSignal": "Señal del móvil"
   },
   "ended": {
     "title": "Este seguimiento en directo ha terminado",
@@ -28,5 +31,16 @@
   "error": {
     "title": "No se pudo cargar el seguimiento",
     "message": "Comprueba tu conexión e inténtalo de nuevo."
+  },
+  "signalValue": "{level}/4",
+  "devices": {
+    "gadget": "Dispositivo",
+    "phone": "Móvil"
+  },
+  "alerts": {
+    "batteryLow": "Batería baja ({device}): {percent}%",
+    "batteryCritical": "Batería muy baja ({device}): {percent}%",
+    "weakSignal": "Señal del móvil débil",
+    "noSignal": "Sin señal en el móvil"
   }
 }

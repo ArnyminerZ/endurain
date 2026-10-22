@@ -20,10 +20,14 @@ import {
 } from '@/features/activities/utils/format'
 import { useLiveSession } from '@/features/live/composables/useLiveSession'
 import {
+  batterySeverity,
   coarseDuration,
+  lastKnown,
   secondsSince,
+  signalSeverity,
   staleThresholdSeconds,
   toGeoPoints,
+  type StatusSeverity,
 } from '@/features/live/utils/liveTrack'
 
 /** A generic "workout" activity type: the live feed carries only a label, so speed and cadence use neutral units. */
@@ -102,6 +106,69 @@ const temperatureUnit = computed(() => (units.value === 'imperial' ? '°F' : '°
 const ambient = computed(() => temperature(latest.value?.temperature))
 const skin = computed(() => temperature(latest.value?.skin_temperature))
 const cadence = computed(() => latest.value?.cadence ?? null)
+
+// Battery and signal are sent now and then, so show the last value ever reported.
+const gadgetBattery = computed(() => lastKnown(points.value, 'gadget_battery'))
+const phoneBattery = computed(() => lastKnown(points.value, 'phone_battery'))
+const phoneSignal = computed(() => lastKnown(points.value, 'phone_signal'))
+
+/** Maps a reading's severity onto a metric accent colour. */
+const ACCENT: Record<StatusSeverity, 'ink' | 'effort' | 'hr'> = {
+  ok: 'ink',
+  low: 'effort',
+  critical: 'hr',
+}
+
+const gadgetBatteryAccent = computed(() =>
+  gadgetBattery.value === null ? 'ink' : ACCENT[batterySeverity(gadgetBattery.value)],
+)
+const phoneBatteryAccent = computed(() =>
+  phoneBattery.value === null ? 'ink' : ACCENT[batterySeverity(phoneBattery.value)],
+)
+const phoneSignalAccent = computed(() =>
+  phoneSignal.value === null ? 'ink' : ACCENT[signalSeverity(phoneSignal.value)],
+)
+
+/** A battery or signal reading that deserves the viewer's attention. */
+interface DeviceAlert {
+  key: string
+  text: string
+  critical: boolean
+}
+
+const deviceAlerts = computed<DeviceAlert[]>(() => {
+  const alerts: DeviceAlert[] = []
+  const batteries = [
+    { key: 'gadget', device: t('live.devices.gadget'), value: gadgetBattery.value },
+    { key: 'phone', device: t('live.devices.phone'), value: phoneBattery.value },
+  ]
+  for (const { key, device, value } of batteries) {
+    if (value === null) {
+      continue
+    }
+    const severity = batterySeverity(value)
+    if (severity !== 'ok') {
+      const message =
+        severity === 'critical' ? 'live.alerts.batteryCritical' : 'live.alerts.batteryLow'
+      alerts.push({
+        key: `${key}-battery`,
+        text: t(message, { device, percent: value }),
+        critical: severity === 'critical',
+      })
+    }
+  }
+  if (phoneSignal.value !== null) {
+    const severity = signalSeverity(phoneSignal.value)
+    if (severity !== 'ok') {
+      alerts.push({
+        key: 'phone-signal',
+        text: t(severity === 'critical' ? 'live.alerts.noSignal' : 'live.alerts.weakSignal'),
+        critical: severity === 'critical',
+      })
+    }
+  }
+  return alerts
+})
 </script>
 
 <template>
@@ -143,6 +210,12 @@ const cadence = computed(() => latest.value?.cadence ?? null)
         </Badge>
       </header>
 
+      <ul v-if="deviceAlerts.length > 0" class="flex flex-wrap gap-2" role="status">
+        <li v-for="alert in deviceAlerts" :key="alert.key">
+          <Badge :variant="alert.critical ? 'destructive' : 'warning'">{{ alert.text }}</Badge>
+        </li>
+      </ul>
+
       <Card class="h-[50vh] min-h-72 overflow-hidden p-0">
         <ActivityMap v-if="geoPoints.length > 0" :points="geoPoints" :refit-on-update="false" />
         <div
@@ -180,6 +253,26 @@ const cadence = computed(() => latest.value?.cadence ?? null)
           :label="t('live.metrics.temperature')"
           :value="ambient"
           :unit="temperatureUnit"
+        />
+        <MetricPill
+          v-if="gadgetBattery !== null"
+          :label="t('live.metrics.gadgetBattery')"
+          :value="gadgetBattery"
+          unit="%"
+          :accent="gadgetBatteryAccent"
+        />
+        <MetricPill
+          v-if="phoneBattery !== null"
+          :label="t('live.metrics.phoneBattery')"
+          :value="phoneBattery"
+          unit="%"
+          :accent="phoneBatteryAccent"
+        />
+        <MetricPill
+          v-if="phoneSignal !== null"
+          :label="t('live.metrics.phoneSignal')"
+          :value="t('live.signalValue', { level: phoneSignal })"
+          :accent="phoneSignalAccent"
         />
         <MetricPill
           v-if="skin !== null"

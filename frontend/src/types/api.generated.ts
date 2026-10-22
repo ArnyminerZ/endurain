@@ -9067,18 +9067,27 @@ export interface components {
          *         cadence: Cadence.
          *         temperature: Ambient temperature in degrees Celsius.
          *         skin_temperature: Skin temperature in degrees Celsius.
+         *         gadget_battery: Battery of the recording gadget (e.g. the watch), in percent.
+         *         phone_battery: Battery of the phone relaying the data, in percent.
+         *         phone_signal: Phone mobile signal level, 0 (none) to 4 (great).
          */
         LivePointIn: {
             /** Cadence */
             cadence?: number | null;
             /** Elevation */
             elevation?: number | null;
+            /** Gadget Battery */
+            gadget_battery?: number | null;
             /** Heart Rate */
             heart_rate?: number | null;
             /** Latitude */
             latitude: number;
             /** Longitude */
             longitude: number;
+            /** Phone Battery */
+            phone_battery?: number | null;
+            /** Phone Signal */
+            phone_signal?: number | null;
             /**
              * Recorded At
              * Format: date-time
@@ -9100,12 +9109,18 @@ export interface components {
             cadence?: number | null;
             /** Elevation */
             elevation?: number | null;
+            /** Gadget Battery */
+            gadget_battery?: number | null;
             /** Heart Rate */
             heart_rate?: number | null;
             /** Latitude */
             latitude: number;
             /** Longitude */
             longitude: number;
+            /** Phone Battery */
+            phone_battery?: number | null;
+            /** Phone Signal */
+            phone_signal?: number | null;
             /**
              * Recorded At
              * Format: date-time
