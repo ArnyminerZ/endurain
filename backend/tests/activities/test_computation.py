@@ -4,7 +4,11 @@ The stream maths moved out of the activities core, then out of the parser
 package once the Strava adapter needed it too — it is a module-level surface now.
 """
 
-from datetime import datetime
+import itertools
+from datetime import datetime, timedelta
+
+import pytest
+from geopy.distance import geodesic
 
 from modules.activities.computation import (
     append_if_not_none,
@@ -12,7 +16,9 @@ from modules.activities.computation import (
     calculate_instant_speed,
     calculate_np,
     calculate_pace,
+    calculate_robust_max,
     compute_elevation_gain_and_loss,
+    smooth_elevation_stream,
 )
 
 
@@ -63,6 +69,40 @@ class TestCalculateInstantSpeed:
             prev_longitude=-9.0,
         )
         assert result > 0
+
+    def test_subsecond_delta_counts_as_one_second(self):
+        start = datetime(2024, 1, 15, 8, 0, 0)
+        distance = geodesic((0.0, 0.0), (0.0, 0.000135)).meters  # ~15 m
+        result = calculate_instant_speed(
+            prev_time=start,
+            waypoint_time=start + timedelta(milliseconds=300),
+            latitude=0.0,
+            longitude=0.000135,
+            prev_latitude=0.0,
+            prev_longitude=0.0,
+        )
+        assert result == pytest.approx(distance)
+        assert 14 < result < 16
+
+
+class TestCalculateRobustMax:
+    def test_empty_returns_zero(self):
+        assert calculate_robust_max([]) == 0
+
+    def test_fewer_than_window_returns_plain_max(self):
+        assert calculate_robust_max([1.0, 9.0, 2.0, 3.0]) == 9.0
+
+    def test_single_spike_is_ignored(self):
+        assert calculate_robust_max([3.0] * 10 + [50.0] + [3.0] * 10) == 3.0
+
+    def test_two_consecutive_spikes_are_ignored(self):
+        assert calculate_robust_max([3.0] * 10 + [50.0, 48.0] + [3.0] * 10) == 3.0
+
+    def test_sustained_fast_stretch_is_reported(self):
+        assert calculate_robust_max([3.0] * 10 + [8.0, 8.0, 8.0] + [3.0] * 10) == 8.0
+
+    def test_trailing_edge_is_not_clamped(self):
+        assert calculate_robust_max([3.0] * 10 + [50.0]) == 3.0
 
 
 class TestComputeElevationGainAndLoss:
@@ -273,3 +313,26 @@ class TestCalculatePaceAcrossDstAndOffsets:
 
         now = datetime(2024, 1, 15, 10, 0, tzinfo=UTC)
         assert computation.calculate_pace(0, now, now) == 0
+
+
+class TestElevationSmoothing:
+    def test_parity_with_mobile_app(self):
+        elevations = [100 + 0.5 * i + (4 if i % 2 == 0 else -4) for i in range(60)]
+        gain, loss = compute_elevation_gain_and_loss([{"ele": e} for e in elevations])
+        assert gain == pytest.approx(22.3956043956, abs=1e-6)
+        assert loss == 0
+
+    def test_stream_smoothing_keeps_time_and_matches_gain(self):
+        elevations = [100 + 0.5 * i + (4 if i % 2 == 0 else -4) for i in range(60)]
+        stream = [{"time": f"t{i}", "ele": e} for i, e in enumerate(elevations)]
+        smoothed = smooth_elevation_stream(stream)
+        assert [w["time"] for w in smoothed] == [w["time"] for w in stream]
+        assert max(abs(b["ele"] - a["ele"]) for a, b in itertools.pairwise(smoothed)) < 1.3
+        gain, _ = compute_elevation_gain_and_loss(stream, median_window=1, avg_window=1)
+        assert gain > 100
+        smoothed_gain, _ = compute_elevation_gain_and_loss(smoothed, median_window=1, avg_window=1)
+        assert smoothed_gain == pytest.approx(22.3956043956, abs=1e-6)
+
+    def test_stream_smoothing_returns_input_on_invalid_data(self):
+        stream = [{"time": "t", "ele": None}]
+        assert smooth_elevation_stream(stream) == stream
