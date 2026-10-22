@@ -27,7 +27,7 @@ def factory(pg_factory):
 
 def _create(db, session_id: str, user_id: int = 1):
     now = datetime.now(UTC)
-    return live_tracking_crud.create_session(session_id, user_id, "Run", None, now, now + timedelta(hours=1), db)
+    return live_tracking_crud.create_session(session_id, user_id, "Run", None, now, now + timedelta(hours=1), 10, db)
 
 
 def test_second_active_session_conflicts_and_session_stays_usable(factory):

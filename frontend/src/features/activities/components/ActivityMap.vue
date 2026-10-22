@@ -13,8 +13,10 @@ const props = withDefaults(
     points: GeoPoint[]
     /** Whether the map responds to pan/zoom. */
     interactive?: boolean
+    /** Re-fit the viewport when the points change after the first render. */
+    refitOnUpdate?: boolean
   }>(),
-  { interactive: true },
+  { interactive: true, refitOnUpdate: true },
 )
 
 const ready = useRenderProvidersReady()
@@ -57,6 +59,7 @@ watch(
     instance.update({
       track: { points, ...endpoints(points) },
       interactive: props.interactive,
+      fit: props.refitOnUpdate,
     })
   },
 )

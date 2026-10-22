@@ -9067,18 +9067,27 @@ export interface components {
          *         cadence: Cadence.
          *         temperature: Ambient temperature in degrees Celsius.
          *         skin_temperature: Skin temperature in degrees Celsius.
+         *         gadget_battery: Battery of the recording gadget (e.g. the watch), in percent.
+         *         phone_battery: Battery of the phone relaying the data, in percent.
+         *         phone_signal: Phone mobile signal level, 0 (none) to 4 (great).
          */
         LivePointIn: {
             /** Cadence */
             cadence?: number | null;
             /** Elevation */
             elevation?: number | null;
+            /** Gadget Battery */
+            gadget_battery?: number | null;
             /** Heart Rate */
             heart_rate?: number | null;
             /** Latitude */
             latitude: number;
             /** Longitude */
             longitude: number;
+            /** Phone Battery */
+            phone_battery?: number | null;
+            /** Phone Signal */
+            phone_signal?: number | null;
             /**
              * Recorded At
              * Format: date-time
@@ -9100,12 +9109,18 @@ export interface components {
             cadence?: number | null;
             /** Elevation */
             elevation?: number | null;
+            /** Gadget Battery */
+            gadget_battery?: number | null;
             /** Heart Rate */
             heart_rate?: number | null;
             /** Latitude */
             latitude: number;
             /** Longitude */
             longitude: number;
+            /** Phone Battery */
+            phone_battery?: number | null;
+            /** Phone Signal */
+            phone_signal?: number | null;
             /**
              * Recorded At
              * Format: date-time
@@ -9183,6 +9198,8 @@ export interface components {
              */
             started_at: string;
             status: components["schemas"]["SessionStatus"];
+            /** Update Interval Seconds */
+            update_interval_seconds: number;
             /** User Id */
             user_id: number;
         };
@@ -9194,6 +9211,8 @@ export interface components {
          *         activity_type: Activity type label shown to viewers (e.g. ``Run``).
          *         name: Optional display name of the workout.
          *         notify_contact_ids: Contacts to email; ``None`` means every contact.
+         *         update_interval_seconds: How often the client expects to push points. Viewers
+         *             use it to decide when to warn that updates stopped arriving.
          */
         LiveSessionStart: {
             /**
@@ -9205,6 +9224,11 @@ export interface components {
             name?: string | null;
             /** Notify Contact Ids */
             notify_contact_ids?: number[] | null;
+            /**
+             * Update Interval Seconds
+             * @default 10
+             */
+            update_interval_seconds: number;
         };
         /**
          * LiveSessionStarted
@@ -9863,6 +9887,7 @@ export interface components {
          *         name: Display name of the workout.
          *         started_at: When the session started.
          *         last_update_at: When the last point arrived.
+         *         update_interval_seconds: How often the client said it would push points.
          *         latest: The newest point, if any.
          *         points: The track (only points after ``since`` when it was given).
          *         total_points: Points stored for the session.
@@ -9889,6 +9914,8 @@ export interface components {
             started_at: string;
             /** Total Points */
             total_points: number;
+            /** Update Interval Seconds */
+            update_interval_seconds: number;
         };
         /**
          * RelationshipRead

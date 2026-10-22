@@ -140,6 +140,7 @@ def start_session(
         data.name,
         now,
         now + timedelta(hours=core_config.settings.LIVE_TRACKING_MAX_SESSION_HOURS),
+        data.update_interval_seconds,
         db,
     )
     email_enabled = core_mail.is_mail_configured()
@@ -366,6 +367,7 @@ def get_public_view(token: str, since: datetime | None, db: Session) -> live_tra
         name=session.name,
         started_at=session.started_at,
         last_update_at=session.last_update_at,
+        update_interval_seconds=session.update_interval_seconds,
         latest=live_tracking_crud.get_latest_point(session.id, db),
         points=live_tracking_crud.list_points(session.id, db, since=since),
         total_points=live_tracking_crud.count_points(session.id, db),

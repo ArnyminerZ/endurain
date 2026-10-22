@@ -61,6 +61,13 @@ def upgrade() -> None:
             nullable=False,
             comment="Hard deadline after which the session is ended server-side",
         ),
+        sa.Column(
+            "update_interval_seconds",
+            sa.Integer(),
+            server_default="10",
+            nullable=False,
+            comment="How often, in seconds, the client said it would push points",
+        ),
         sa.Column("ended_at", sa.DateTime(timezone=True), nullable=True, comment="When the session ended"),
         *_timestamps(),
         sa.CheckConstraint("status IN ('active', 'ended')", name="ck_live_sessions_status"),
@@ -93,6 +100,18 @@ def upgrade() -> None:
         sa.Column("cadence", sa.SmallInteger(), nullable=True, comment="Cadence"),
         sa.Column("temperature", sa.Float(), nullable=True, comment="Ambient temperature in degrees Celsius"),
         sa.Column("skin_temperature", sa.Float(), nullable=True, comment="Skin temperature in degrees Celsius"),
+        sa.Column(
+            "gadget_battery", sa.SmallInteger(), nullable=True, comment="Battery of the recording gadget in percent"
+        ),
+        sa.Column(
+            "phone_battery", sa.SmallInteger(), nullable=True, comment="Battery of the relaying phone in percent"
+        ),
+        sa.Column(
+            "phone_signal",
+            sa.SmallInteger(),
+            nullable=True,
+            comment="Phone mobile signal level, 0 (none) to 4 (great)",
+        ),
         sa.ForeignKeyConstraint(["session_id"], ["live_sessions.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("session_id", "recorded_at", name="uq_live_points_session_recorded_at"),

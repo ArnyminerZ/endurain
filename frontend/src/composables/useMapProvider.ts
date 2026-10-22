@@ -34,6 +34,11 @@ export interface MapRenderOptions {
   track: MapTrack
   /** Whether the map responds to pan/zoom. Defaults to provider preference. */
   interactive?: boolean
+  /**
+   * Whether `update` re-fits the viewport to the track. Defaults to `true`; a
+   * live view sets `false` so a viewer's pan/zoom is not undone by each poll.
+   */
+  fit?: boolean
 }
 
 /** Imperative handle to a mounted map, returned by {@link MapProvider.mount}. */

@@ -146,7 +146,7 @@ export function createLeafletMapProvider(config: LeafletMapProviderConfig = {}):
         }
       }
 
-      const draw = (track: MapTrack): void => {
+      const draw = (track: MapTrack, refit = true): void => {
         currentTrack = track
         for (const layer of overlays) {
           map.removeLayer(layer)
@@ -164,14 +164,16 @@ export function createLeafletMapProvider(config: LeafletMapProviderConfig = {}):
           overlays.push(emphasisMarker(track.finish, FINISH_MARKER_COLOR).addTo(map))
         }
 
-        fit(track)
+        if (refit) {
+          fit(track)
+        }
       }
 
       draw(options.track)
 
       return {
         update(next: MapRenderOptions): void {
-          draw(next.track)
+          draw(next.track, next.fit !== false)
         },
         recenter(): void {
           fit(currentTrack)

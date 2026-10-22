@@ -1,0 +1,46 @@
+{
+  "title": "Seguimiento en directo",
+  "loading": "Cargando el seguimiento en directo",
+  "live": "En directo",
+  "reconnecting": "Reconectando…",
+  "sharing": "{name} está compartiendo su actividad en directo",
+  "waiting": "Esperando la primera posición…",
+  "updated": "Actualizado hace {time}",
+  "stale": "Sin actualizaciones desde hace {time}. Puede que el móvil no tenga conexión.",
+  "ago": {
+    "seconds": "{n} s",
+    "minutes": "{n} min",
+    "hours": "{n} h"
+  },
+  "metrics": {
+    "elapsed": "Tiempo",
+    "heartRate": "Frecuencia cardíaca",
+    "speed": "Velocidad",
+    "elevation": "Altitud",
+    "cadence": "Cadencia",
+    "temperature": "Temperatura",
+    "skinTemperature": "Temperatura de la piel",
+    "gadgetBattery": "Batería del dispositivo",
+    "phoneBattery": "Batería del móvil",
+    "phoneSignal": "Señal del móvil"
+  },
+  "ended": {
+    "title": "Este seguimiento en directo ha terminado",
+    "message": "El enlace solo funciona mientras se graba la actividad."
+  },
+  "error": {
+    "title": "No se pudo cargar el seguimiento",
+    "message": "Comprueba tu conexión e inténtalo de nuevo."
+  },
+  "signalValue": "{level}/4",
+  "devices": {
+    "gadget": "Dispositivo",
+    "phone": "Móvil"
+  },
+  "alerts": {
+    "batteryLow": "Batería baja ({device}): {percent}%",
+    "batteryCritical": "Batería muy baja ({device}): {percent}%",
+    "weakSignal": "Señal del móvil débil",
+    "noSignal": "Sin señal en el móvil"
+  }
+}

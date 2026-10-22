@@ -33,6 +33,7 @@ class LiveSession(Base, TimestampMixin):
         started_at: When the session started.
         last_update_at: When the last point was received (start time if none).
         expires_at: Hard end of the session, whatever the client does.
+        update_interval_seconds: How often the client said it would push points.
         ended_at: When the session stopped, if it has.
     """
 
@@ -93,6 +94,13 @@ class LiveSession(Base, TimestampMixin):
         nullable=False,
         comment="Hard deadline after which the session is ended server-side",
     )
+    update_interval_seconds: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=live_tracking_constants.DEFAULT_UPDATE_INTERVAL_SECONDS,
+        server_default=str(live_tracking_constants.DEFAULT_UPDATE_INTERVAL_SECONDS),
+        comment="How often, in seconds, the client said it would push points",
+    )
     ended_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
@@ -115,6 +123,9 @@ class LivePoint(Base):
         cadence: Cadence in rpm/spm.
         temperature: Ambient temperature in degrees Celsius.
         skin_temperature: Skin temperature in degrees Celsius.
+        gadget_battery: Battery of the recording gadget (e.g. the watch), in percent.
+        phone_battery: Battery of the phone relaying the data, in percent.
+        phone_signal: Phone mobile signal level, 0 (none) to 4 (great).
     """
 
     __tablename__ = "live_points"
@@ -143,6 +154,15 @@ class LivePoint(Base):
     )
     skin_temperature: Mapped[float | None] = mapped_column(
         Float, nullable=True, comment="Skin temperature in degrees Celsius"
+    )
+    gadget_battery: Mapped[int | None] = mapped_column(
+        SmallInteger, nullable=True, comment="Battery of the recording gadget in percent"
+    )
+    phone_battery: Mapped[int | None] = mapped_column(
+        SmallInteger, nullable=True, comment="Battery of the relaying phone in percent"
+    )
+    phone_signal: Mapped[int | None] = mapped_column(
+        SmallInteger, nullable=True, comment="Phone mobile signal level, 0 (none) to 4 (great)"
     )
 
 

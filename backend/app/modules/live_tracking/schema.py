@@ -34,6 +34,9 @@ class LivePointIn(BaseModel):
         cadence: Cadence.
         temperature: Ambient temperature in degrees Celsius.
         skin_temperature: Skin temperature in degrees Celsius.
+        gadget_battery: Battery of the recording gadget (e.g. the watch), in percent.
+        phone_battery: Battery of the phone relaying the data, in percent.
+        phone_signal: Phone mobile signal level, 0 (none) to 4 (great).
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -47,6 +50,9 @@ class LivePointIn(BaseModel):
     cadence: int | None = Field(default=None, ge=0, le=300)
     temperature: float | None = Field(default=None, ge=-90, le=80)
     skin_temperature: float | None = Field(default=None, ge=-20, le=60)
+    gadget_battery: int | None = Field(default=None, ge=0, le=100)
+    phone_battery: int | None = Field(default=None, ge=0, le=100)
+    phone_signal: int | None = Field(default=None, ge=0, le=4)
 
 
 class LivePointsPush(BaseModel):
@@ -75,6 +81,9 @@ class LivePointRead(BaseModel):
     cadence: int | None = None
     temperature: float | None = None
     skin_temperature: float | None = None
+    gadget_battery: int | None = None
+    phone_battery: int | None = None
+    phone_signal: int | None = None
 
     _utc = field_validator("recorded_at")(_as_utc)
 
@@ -86,6 +95,8 @@ class LiveSessionStart(BaseModel):
         activity_type: Activity type label shown to viewers (e.g. ``Run``).
         name: Optional display name of the workout.
         notify_contact_ids: Contacts to email; ``None`` means every contact.
+        update_interval_seconds: How often the client expects to push points. Viewers
+            use it to decide when to warn that updates stopped arriving.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -93,6 +104,11 @@ class LiveSessionStart(BaseModel):
     activity_type: str = Field(default=live_tracking_constants.DEFAULT_ACTIVITY_TYPE, min_length=1, max_length=50)
     name: str | None = Field(default=None, max_length=150)
     notify_contact_ids: list[StrictInt] | None = Field(default=None, max_length=100)
+    update_interval_seconds: int = Field(
+        default=live_tracking_constants.DEFAULT_UPDATE_INTERVAL_SECONDS,
+        ge=live_tracking_constants.MIN_UPDATE_INTERVAL_SECONDS,
+        le=live_tracking_constants.MAX_UPDATE_INTERVAL_SECONDS,
+    )
 
 
 class LiveSessionRead(BaseModel):
@@ -108,6 +124,7 @@ class LiveSessionRead(BaseModel):
     started_at: datetime
     last_update_at: datetime
     expires_at: datetime
+    update_interval_seconds: int
     ended_at: datetime | None = None
 
     _utc = field_validator("started_at", "last_update_at", "expires_at", "ended_at")(_as_utc)
@@ -177,6 +194,7 @@ class PublicLiveView(BaseModel):
         name: Display name of the workout.
         started_at: When the session started.
         last_update_at: When the last point arrived.
+        update_interval_seconds: How often the client said it would push points.
         latest: The newest point, if any.
         points: The track (only points after ``since`` when it was given).
         total_points: Points stored for the session.
@@ -187,6 +205,7 @@ class PublicLiveView(BaseModel):
     name: str | None = None
     started_at: datetime
     last_update_at: datetime
+    update_interval_seconds: int
     latest: LivePointRead | None = None
     points: list[LivePointRead]
     total_points: int
