@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, StrictInt, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, StrictInt, field_validator, model_validator
 
 import modules.live_tracking.constants as live_tracking_constants
 
@@ -36,7 +36,15 @@ class LivePointIn(BaseModel):
         skin_temperature: Skin temperature in degrees Celsius.
         gadget_battery: Battery of the recording gadget (e.g. the watch), in percent.
         phone_battery: Battery of the phone relaying the data, in percent.
-        phone_signal: Phone mobile signal level, 0 (none) to 4 (great).
+        phone_signal: Deprecated coarse phone signal level, 0 (none) to 4 (great). Send
+            ``phone_signal_dbm`` and ``phone_signal_type`` instead.
+        phone_signal_dbm: Phone mobile signal power in dBm (e.g. -95).
+        phone_signal_type: Which measurement ``phone_signal_dbm`` is: ``rsrp`` (LTE/5G),
+            ``rssi`` or ``rscp`` (3G). Required with ``phone_signal_dbm``.
+        position_source: Where the position was measured: ``gadget`` (the watch's GPS) or
+            ``phone``.
+        satellites: Satellites used for the fix, when known.
+        horizontal_accuracy: Estimated horizontal accuracy of the fix, in meters.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -53,6 +61,27 @@ class LivePointIn(BaseModel):
     gadget_battery: int | None = Field(default=None, ge=0, le=100)
     phone_battery: int | None = Field(default=None, ge=0, le=100)
     phone_signal: int | None = Field(default=None, ge=0, le=4)
+    phone_signal_dbm: int | None = Field(
+        default=None, ge=live_tracking_constants.MIN_SIGNAL_DBM, le=live_tracking_constants.MAX_SIGNAL_DBM
+    )
+    phone_signal_type: live_tracking_constants.SignalType | None = None
+    position_source: live_tracking_constants.PositionSource | None = None
+    satellites: int | None = Field(default=None, ge=0, le=live_tracking_constants.MAX_SATELLITES)
+    horizontal_accuracy: float | None = Field(default=None, ge=0, le=live_tracking_constants.MAX_HORIZONTAL_ACCURACY_M)
+
+    @model_validator(mode="after")
+    def _signal_has_a_type(self) -> "LivePointIn":
+        """Require the measurement type with a dBm reading, and the reading with a type.
+
+        Returns:
+            The validated point.
+
+        Raises:
+            ValueError: If only one of ``phone_signal_dbm`` and ``phone_signal_type`` is set.
+        """
+        if (self.phone_signal_dbm is None) != (self.phone_signal_type is None):
+            raise ValueError("phone_signal_dbm and phone_signal_type must be sent together")
+        return self
 
 
 class LivePointsPush(BaseModel):
@@ -84,6 +113,11 @@ class LivePointRead(BaseModel):
     gadget_battery: int | None = None
     phone_battery: int | None = None
     phone_signal: int | None = None
+    phone_signal_dbm: int | None = None
+    phone_signal_type: live_tracking_constants.SignalType | None = None
+    position_source: live_tracking_constants.PositionSource | None = None
+    satellites: int | None = None
+    horizontal_accuracy: float | None = None
 
     _utc = field_validator("recorded_at")(_as_utc)
 

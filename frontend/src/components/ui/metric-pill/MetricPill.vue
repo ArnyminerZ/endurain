@@ -30,5 +30,7 @@ const props = defineProps<Props>()
       {{ value }}
       <span v-if="unit" class="text-hint font-normal">{{ unit }}</span>
     </p>
+    <!-- Optional extra below the value, e.g. a signal indicator. -->
+    <slot />
   </div>
 </template>

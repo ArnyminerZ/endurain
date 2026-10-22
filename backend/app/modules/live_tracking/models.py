@@ -125,11 +125,20 @@ class LivePoint(Base):
         skin_temperature: Skin temperature in degrees Celsius.
         gadget_battery: Battery of the recording gadget (e.g. the watch), in percent.
         phone_battery: Battery of the phone relaying the data, in percent.
-        phone_signal: Phone mobile signal level, 0 (none) to 4 (great).
+        phone_signal: Deprecated phone signal level, 0 (none) to 4 (great); use ``phone_signal_dbm``.
+        phone_signal_dbm: Phone mobile signal power in dBm.
+        phone_signal_type: Which measurement ``phone_signal_dbm`` is (rsrp, rssi or rscp).
+        position_source: Where the position was measured (gadget or phone).
+        satellites: Satellites used for the fix.
+        horizontal_accuracy: Estimated horizontal accuracy of the fix, in meters.
     """
 
     __tablename__ = "live_points"
-    __table_args__ = (UniqueConstraint("session_id", "recorded_at", name="uq_live_points_session_recorded_at"),)
+    __table_args__ = (
+        UniqueConstraint("session_id", "recorded_at", name="uq_live_points_session_recorded_at"),
+        CheckConstraint("position_source IN ('gadget', 'phone')", name="ck_live_points_position_source"),
+        CheckConstraint("phone_signal_type IN ('rsrp', 'rssi', 'rscp')", name="ck_live_points_phone_signal_type"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     session_id: Mapped[str] = mapped_column(
@@ -162,7 +171,20 @@ class LivePoint(Base):
         SmallInteger, nullable=True, comment="Battery of the relaying phone in percent"
     )
     phone_signal: Mapped[int | None] = mapped_column(
-        SmallInteger, nullable=True, comment="Phone mobile signal level, 0 (none) to 4 (great)"
+        SmallInteger, nullable=True, comment="Deprecated phone mobile signal level, 0 (none) to 4 (great)"
+    )
+    phone_signal_dbm: Mapped[int | None] = mapped_column(
+        SmallInteger, nullable=True, comment="Phone mobile signal power in dBm"
+    )
+    phone_signal_type: Mapped[str | None] = mapped_column(
+        String(10), nullable=True, comment="Measurement behind phone_signal_dbm: rsrp, rssi or rscp"
+    )
+    position_source: Mapped[str | None] = mapped_column(
+        String(10), nullable=True, comment="Where the position was measured: gadget or phone"
+    )
+    satellites: Mapped[int | None] = mapped_column(SmallInteger, nullable=True, comment="Satellites used for the fix")
+    horizontal_accuracy: Mapped[float | None] = mapped_column(
+        Float, nullable=True, comment="Estimated horizontal accuracy of the fix in meters"
     )
 
 

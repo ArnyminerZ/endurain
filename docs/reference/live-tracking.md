@@ -13,6 +13,21 @@ Contacts (the people emailed at start) are managed with `GET/POST /api/v1/live/c
 
 A session that goes quiet for `LIVE_TRACKING_STALE_MINUTES` or outlives `LIVE_TRACKING_MAX_SESSION_HOURS` is ended by the scheduler, with the same result as a stop.
 
+## Point quality
+
+Besides the position, a point can say how good it is. All of these are optional and a viewer only shows what it gets.
+
+| Field | Meaning |
+| --- | --- |
+| `position_source` | Where the position was measured: `gadget` (the watch's own GPS) or `phone`. |
+| `satellites` | Satellites used for the fix. |
+| `horizontal_accuracy` | Estimated horizontal accuracy of the fix, in meters. |
+| `phone_signal_dbm` | The phone's mobile signal power in dBm (-150 to 0). |
+| `phone_signal_type` | Which measurement `phone_signal_dbm` is: `rsrp` (LTE and 5G), `rssi` or `rscp` (3G). Required with `phone_signal_dbm`, and the other way round. |
+| `phone_signal` | Deprecated 0-4 level, still accepted from older clients. |
+
+The viewer turns the signal into bars the way a phone's status bar does (the same dBm means different things for each kind of measurement, which is why the type is sent), and rates the position as precise, approximate or rough from the accuracy, or from the satellite count when no accuracy is sent.
+
 ## Share links
 
 The link is `{ENDURAIN_HOST}/live/<token>`. The token is the session id (32 hex characters) followed directly by an HMAC (43 characters), derived from the session id and `SECRET_KEY`, so nothing is stored and the owner can always read the link back. Rotating `SECRET_KEY` invalidates links of running sessions.
