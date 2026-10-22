@@ -32,7 +32,15 @@ _trusted_proxy_hostname_last_refresh = float("-inf")
 # getaddrinfo call cannot be cancelled, but this cap prevents unresolved OIDC
 # hosts from consuming every worker used by unrelated to_thread operations.
 _SSRF_DNS_RESOLUTION_TIMEOUT_SECONDS = 5.0
-_SSRF_DNS_EXECUTOR = ThreadPoolExecutor(max_workers=4, thread_name_prefix="ssrf-dns")
+_SSRF_DNS_MAX_WORKERS = 4
+# Lookups running or queued. A lookup holds its slot until it really finishes, so
+# a caller that gave up on a stuck getaddrinfo still counts against the bound and
+# later callers are refused instead of queueing behind it. Large enough that a
+# burst of ordinary, fast lookups is absorbed by the queue and only a stalled
+# resolver reaches the bound.
+_SSRF_DNS_MAX_PENDING = 32
+_ssrf_dns_slots = threading.BoundedSemaphore(_SSRF_DNS_MAX_PENDING)
+_ssrf_dns_executor: ThreadPoolExecutor | None = None
 
 # RFC 1123 hostname syntax: labels of 1-63 alphanumeric/hyphen
 # characters, separated by dots. Hyphens may not start or end
@@ -453,6 +461,29 @@ def host_rejection_reason(host: str | None, *, purpose: str | None = None) -> st
     return _address_rejection_reason(hostname, purpose=purpose)
 
 
+def _outbound_url_hostname(url: str) -> tuple[str | None, str | None]:
+    """Check the parts of an outbound URL that need no DNS lookup.
+
+    Args:
+        url: Fully-qualified outbound URL.
+
+    Returns:
+        The hostname and ``None``, or ``None`` and a safe reason the URL is refused.
+    """
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return None, "Malformed URL"
+
+    if parsed.scheme.lower() not in _ALLOWED_OUTBOUND_SCHEMES:
+        return None, "URL scheme is not permitted"
+
+    if not parsed.hostname:
+        return None, "URL has no hostname"
+
+    return parsed.hostname, None
+
+
 def resolve_url_addresses(
     url: str,
     *,
@@ -467,17 +498,9 @@ def resolve_url_addresses(
     Returns:
         Validated addresses and ``None``, or no addresses and a safe reason.
     """
-    try:
-        parsed = urlparse(url)
-    except ValueError:
-        return (), "Malformed URL"
-
-    if parsed.scheme.lower() not in _ALLOWED_OUTBOUND_SCHEMES:
-        return (), "URL scheme is not permitted"
-
-    hostname = parsed.hostname
-    if not hostname:
-        return (), "URL has no hostname"
+    hostname, reason = _outbound_url_hostname(url)
+    if hostname is None:
+        return (), reason
 
     addresses, reason = _resolve_checked_addresses(hostname, purpose=purpose)
     return addresses, f"URL {reason}" if reason is not None else None
@@ -544,15 +567,44 @@ def reject_private_url(url: str, *, purpose: str | None = None) -> None:
         )
 
 
+def _get_ssrf_dns_executor() -> ThreadPoolExecutor:
+    """Return the dedicated SSRF DNS executor, creating it on first use.
+
+    Returns:
+        The process-wide thread pool that runs hostname resolution.
+    """
+    global _ssrf_dns_executor
+    if _ssrf_dns_executor is None:
+        _ssrf_dns_executor = ThreadPoolExecutor(max_workers=_SSRF_DNS_MAX_WORKERS, thread_name_prefix="ssrf-dns")
+    return _ssrf_dns_executor
+
+
+def shutdown_ssrf_dns_executor() -> None:
+    """Shut the SSRF DNS executor down, if it was ever started.
+
+    Called from the API lifespan. Queued lookups are cancelled, so a caller still
+    waiting on one is cancelled with it, and the call does not wait for a running
+    ``getaddrinfo``, which cannot be interrupted.
+    """
+    global _ssrf_dns_executor
+    if _ssrf_dns_executor is None:
+        return
+    _ssrf_dns_executor.shutdown(wait=False, cancel_futures=True)
+    _ssrf_dns_executor = None
+
+
 async def reject_private_url_async(url: str, *, purpose: str | None = None) -> None:
     """Await :func:`reject_private_url` without blocking the event loop.
 
     The guard resolves every A/AAAA record with :func:`socket.getaddrinfo`, which
     is blocking and cannot be cancelled once started. Async callers run it in a
     small dedicated executor so stalled DNS calls cannot exhaust asyncio's shared
-    worker pool, and stop awaiting it after a bounded interval. Synchronous
-    callers (scheduled jobs, subscribers) call :func:`reject_private_url`
-    directly.
+    worker pool, and stop awaiting it after a bounded interval. At most
+    ``_SSRF_DNS_MAX_PENDING`` lookups may be running or queued; further callers
+    are refused at once, so a flood of lookups for an unresolvable host cannot
+    pile up work. A lookup still queued when its caller gives up is cancelled.
+    Synchronous callers (scheduled jobs, subscribers) call
+    :func:`reject_private_url` directly.
 
     Args:
         url: The fully-qualified URL the caller intends to fetch.
@@ -561,13 +613,37 @@ async def reject_private_url_async(url: str, *, purpose: str | None = None) -> N
 
     Raises:
         HTTPException: 400, for the reasons listed on :func:`reject_private_url`.
+        HTTPException: 503, with ``Retry-After``, when too many lookups are
+            already running or queued.
         HTTPException: 504 when hostname resolution exceeds the allowed time.
     """
-    loop = asyncio.get_running_loop()
-    operation = partial(reject_private_url, url, purpose=purpose)
+    # A URL that can be refused without DNS never needs a slot, so it gets its 400
+    # even while the pool is full.
+    hostname, reason = _outbound_url_hostname(url)
+    if hostname is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=reason)
+
+    if not _ssrf_dns_slots.acquire(blocking=False):
+        logger.warning(
+            "SSRF hostname resolution is saturated",
+            extra=core_logger.context(purpose=purpose or "unspecified"),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Hostname resolution is busy",
+            headers={"Retry-After": "1"},
+        )
+    try:
+        future = _get_ssrf_dns_executor().submit(partial(reject_private_url, url, purpose=purpose))
+    except BaseException:
+        _ssrf_dns_slots.release()
+        raise
+    # Released when the lookup ends or is cancelled while still queued, not when
+    # the caller stops waiting.
+    future.add_done_callback(lambda _: _ssrf_dns_slots.release())
     try:
         await asyncio.wait_for(
-            loop.run_in_executor(_SSRF_DNS_EXECUTOR, operation),
+            asyncio.wrap_future(future),
             timeout=_SSRF_DNS_RESOLUTION_TIMEOUT_SECONDS,
         )
     except TimeoutError as err:
