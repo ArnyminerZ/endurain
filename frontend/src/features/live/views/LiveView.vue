@@ -19,12 +19,15 @@ import {
   temperatureToDisplay,
 } from '@/features/activities/utils/format'
 import { useLiveSession } from '@/features/live/composables/useLiveSession'
-import { coarseDuration, secondsSince, toGeoPoints } from '@/features/live/utils/liveTrack'
+import {
+  coarseDuration,
+  secondsSince,
+  staleThresholdSeconds,
+  toGeoPoints,
+} from '@/features/live/utils/liveTrack'
 
 /** A generic "workout" activity type: the live feed carries only a label, so speed and cadence use neutral units. */
 const GENERIC_ACTIVITY_TYPE = 10
-/** After this many seconds without an update the viewer is warned the phone may be offline. */
-const STALE_AFTER_SECONDS = 90
 
 const route = useRoute()
 const { t } = useI18n()
@@ -62,7 +65,12 @@ function formatAgo(seconds: number): string {
 const sinceUpdate = computed(() =>
   session.value ? secondsSince(session.value.last_update_at, nowMs.value) : 0,
 )
-const isStale = computed(() => status.value === 'live' && sinceUpdate.value >= STALE_AFTER_SECONDS)
+const isStale = computed(
+  () =>
+    status.value === 'live' &&
+    session.value !== null &&
+    sinceUpdate.value >= staleThresholdSeconds(session.value.update_interval_seconds),
+)
 const elapsed = computed(() =>
   session.value ? formatHmsDuration(secondsSince(session.value.started_at, nowMs.value)) : '--',
 )

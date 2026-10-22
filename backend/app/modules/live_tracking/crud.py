@@ -26,6 +26,7 @@ def create_session(
     name: str | None,
     now: datetime,
     expires_at: datetime,
+    update_interval_seconds: int,
     db: Session,
 ) -> live_tracking_schema.LiveSessionRead:
     """Stage a new active session.
@@ -37,6 +38,7 @@ def create_session(
         name: Optional workout name.
         now: The start time.
         expires_at: The hard deadline.
+        update_interval_seconds: How often the client said it will push points.
         db: Database session.
 
     Returns:
@@ -54,6 +56,7 @@ def create_session(
         started_at=now,
         last_update_at=now,
         expires_at=expires_at,
+        update_interval_seconds=update_interval_seconds,
     )
     try:
         with db.begin_nested():

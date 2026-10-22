@@ -80,3 +80,20 @@ export function coarseDuration(seconds: number): CoarseDuration {
   }
   return { unit: 'hours', value: Math.floor(seconds / 3600) }
 }
+
+/** A viewer warns once this many push intervals pass without an update. */
+const STALE_INTERVALS = 3
+/** Floor for the warning threshold, so a 1 s interval does not flicker on a slow network. */
+const MIN_STALE_SECONDS = 15
+
+/**
+ * Seconds without a new point after which the viewer warns the client is silent.
+ * Derived from the interval the client declared when it started the session, so
+ * a client that reports once a minute is not flagged after 90 seconds.
+ *
+ * @param updateIntervalSeconds - How often the client said it would push points.
+ * @returns The stale threshold in seconds.
+ */
+export function staleThresholdSeconds(updateIntervalSeconds: number): number {
+  return Math.max(MIN_STALE_SECONDS, Math.ceil(updateIntervalSeconds) * STALE_INTERVALS)
+}

@@ -24,6 +24,7 @@ function response(seconds: number[], total = seconds.length): PublicLive {
     name: null,
     started_at: points[0]?.recorded_at ?? '2026-10-22T08:00:00Z',
     last_update_at: points[points.length - 1]?.recorded_at ?? '2026-10-22T08:00:00Z',
+    update_interval_seconds: 10,
     latest: points[points.length - 1] ?? null,
     points,
     total_points: total,

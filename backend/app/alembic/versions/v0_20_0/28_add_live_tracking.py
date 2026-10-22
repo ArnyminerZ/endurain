@@ -61,6 +61,13 @@ def upgrade() -> None:
             nullable=False,
             comment="Hard deadline after which the session is ended server-side",
         ),
+        sa.Column(
+            "update_interval_seconds",
+            sa.Integer(),
+            server_default="10",
+            nullable=False,
+            comment="How often, in seconds, the client said it would push points",
+        ),
         sa.Column("ended_at", sa.DateTime(timezone=True), nullable=True, comment="When the session ended"),
         *_timestamps(),
         sa.CheckConstraint("status IN ('active', 'ended')", name="ck_live_sessions_status"),

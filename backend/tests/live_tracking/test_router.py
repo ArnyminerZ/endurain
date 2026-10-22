@@ -105,6 +105,13 @@ class TestLifecycle:
         latest = client.get(f"/public/live/{token}").json()["latest"]
         assert (latest["temperature"], latest["skin_temperature"]) == (21.5, 33.4)
 
+    def test_update_interval_is_validated_and_reaches_the_viewer(self, client):
+        assert client.post("/live/sessions", json={"update_interval_seconds": 0}).status_code == 422
+        assert client.post("/live/sessions", json={"update_interval_seconds": 601}).status_code == 422
+        started = _start(client, update_interval_seconds=45)
+        token = started["share_url"].rsplit("/live/", 1)[1]
+        assert client.get(f"/public/live/{token}").json()["update_interval_seconds"] == 45
+
     def test_rejects_implausible_temperatures(self, client, now):
         started = _start(client)
         url = f"/live/sessions/{started['session']['id']}/points"

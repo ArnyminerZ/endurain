@@ -7,6 +7,7 @@ import {
   mergePoints,
   newestTimestamp,
   secondsSince,
+  staleThresholdSeconds,
   toGeoPoints,
 } from '@/features/live/utils/liveTrack'
 
@@ -65,6 +66,18 @@ describe('secondsSince', () => {
 
   it('is 0 for an invalid date', () => {
     expect(secondsSince('nope', Date.now())).toBe(0)
+  })
+})
+
+describe('staleThresholdSeconds', () => {
+  it('is three intervals for a slow client', () => {
+    expect(staleThresholdSeconds(60)).toBe(180)
+    expect(staleThresholdSeconds(10)).toBe(30)
+  })
+
+  it('never drops below the floor', () => {
+    expect(staleThresholdSeconds(1)).toBe(15)
+    expect(staleThresholdSeconds(5)).toBe(15)
   })
 })
 

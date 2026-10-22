@@ -41,6 +41,15 @@ class TestStartSession:
         assert started.notified_contacts == 0
         assert started.email_enabled is False
 
+    def test_stores_the_declared_update_interval(self, db, no_mail):
+        started = _start(db, update_interval_seconds=60)
+        assert started.session.update_interval_seconds == 60
+        assert live_tracking_crud.get_session(started.session.id, db).update_interval_seconds == 60
+
+    def test_update_interval_defaults(self, db, no_mail):
+        started = _start(db)
+        assert started.session.update_interval_seconds == live_tracking_constants.DEFAULT_UPDATE_INTERVAL_SECONDS
+
     def test_second_active_session_conflicts(self, db, no_mail):
         _start(db)
         with pytest.raises(core_exceptions.ConflictError):
@@ -164,6 +173,12 @@ class TestCancelSession:
 
 
 class TestPublicView:
+    def test_exposes_the_update_interval(self, db, no_mail):
+        started = _start(db, update_interval_seconds=30)
+        token = started.share_url.rsplit("/live/", 1)[1]
+        with patch.object(live_tracking_service.users_integration, "get_user", return_value=_USER):
+            assert live_tracking_service.get_public_view(token, None, db).update_interval_seconds == 30
+
     def test_returns_track_without_private_fields(self, db, now, no_mail):
         started = _start(db, activity_type="Run", name="Morning")
         live_tracking_service.push_points(started.session.id, USER_ID, push(track(now)), db)
