@@ -1,0 +1,32 @@
+{
+  "title": "Live tracking",
+  "loading": "Loading live tracking",
+  "live": "Live",
+  "reconnecting": "Reconnecting…",
+  "sharing": "{name} is sharing their activity live",
+  "waiting": "Waiting for the first position…",
+  "updated": "Updated {time} ago",
+  "stale": "No update for {time}. The phone may be offline.",
+  "ago": {
+    "seconds": "{n} s",
+    "minutes": "{n} min",
+    "hours": "{n} h"
+  },
+  "metrics": {
+    "elapsed": "Elapsed",
+    "heartRate": "Heart rate",
+    "speed": "Speed",
+    "elevation": "Elevation",
+    "cadence": "Cadence",
+    "temperature": "Temperature",
+    "skinTemperature": "Skin temperature"
+  },
+  "ended": {
+    "title": "This live tracking has ended",
+    "message": "The link only works while the activity is being recorded."
+  },
+  "error": {
+    "title": "Couldn't load live tracking",
+    "message": "Check your connection and try again."
+  }
+}

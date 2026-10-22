@@ -101,6 +101,14 @@ const router = createRouter({
       meta: { requiresAuth: false, cardless: true },
     },
     {
+      path: '/live/:token',
+      name: 'live',
+      component: () => import('@/features/live/views/LiveView.vue'),
+      // Anonymous by design: the unguessable link is the credential. Bare, so a
+      // guest sees no app chrome or navigation into the rest of the instance.
+      meta: { requiresAuth: false, bare: true, cardless: true },
+    },
+    {
       path: '/health',
       component: () => import('@/features/health/views/HealthView.vue'),
       // Cardless: the health shell supplies its own sidebar + content surfaces.

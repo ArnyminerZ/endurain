@@ -1,0 +1,32 @@
+{
+  "title": "Seguimiento en directo",
+  "loading": "Cargando el seguimiento en directo",
+  "live": "En directo",
+  "reconnecting": "Reconectando…",
+  "sharing": "{name} está compartiendo su actividad en directo",
+  "waiting": "Esperando la primera posición…",
+  "updated": "Actualizado hace {time}",
+  "stale": "Sin actualizaciones desde hace {time}. Puede que el móvil no tenga conexión.",
+  "ago": {
+    "seconds": "{n} s",
+    "minutes": "{n} min",
+    "hours": "{n} h"
+  },
+  "metrics": {
+    "elapsed": "Tiempo",
+    "heartRate": "Frecuencia cardíaca",
+    "speed": "Velocidad",
+    "elevation": "Altitud",
+    "cadence": "Cadencia",
+    "temperature": "Temperatura",
+    "skinTemperature": "Temperatura de la piel"
+  },
+  "ended": {
+    "title": "Este seguimiento en directo ha terminado",
+    "message": "El enlace solo funciona mientras se graba la actividad."
+  },
+  "error": {
+    "title": "No se pudo cargar el seguimiento",
+    "message": "Comprueba tu conexión e inténtalo de nuevo."
+  }
+}

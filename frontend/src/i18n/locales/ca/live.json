@@ -1,0 +1,32 @@
+{
+  "title": "Seguiment en directe",
+  "loading": "Carregant el seguiment en directe",
+  "live": "En directe",
+  "reconnecting": "Reconnectant…",
+  "sharing": "{name} està compartint la seua activitat en directe",
+  "waiting": "Esperant la primera posició…",
+  "updated": "Actualitzat fa {time}",
+  "stale": "Sense actualitzacions des de fa {time}. Pot ser que el mòbil no tinga connexió.",
+  "ago": {
+    "seconds": "{n} s",
+    "minutes": "{n} min",
+    "hours": "{n} h"
+  },
+  "metrics": {
+    "elapsed": "Temps",
+    "heartRate": "Freqüència cardíaca",
+    "speed": "Velocitat",
+    "elevation": "Altitud",
+    "cadence": "Cadència",
+    "temperature": "Temperatura",
+    "skinTemperature": "Temperatura de la pell"
+  },
+  "ended": {
+    "title": "Aquest seguiment en directe ha acabat",
+    "message": "L'enllaç només funciona mentre es grava l'activitat."
+  },
+  "error": {
+    "title": "No s'ha pogut carregar el seguiment",
+    "message": "Comprova la connexió i torna-ho a provar."
+  }
+}
