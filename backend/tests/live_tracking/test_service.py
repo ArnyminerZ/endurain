@@ -205,7 +205,7 @@ class TestPublicView:
     def test_bad_tokens_and_ended_sessions_are_all_not_found(self, db, no_mail):
         started = _start(db)
         token = started.share_url.rsplit("/live/", 1)[1]
-        for bad in ("nope", token[:-3] + "abc", "a" * 32 + ".b"):
+        for bad in ("nope", token[:-3] + "abc", "a" * 75, "a" * 32 + ".b"):
             with pytest.raises(core_exceptions.NotFoundError) as unknown:
                 live_tracking_service.get_public_view(bad, None, db)
         live_tracking_service.stop_session(started.session.id, USER_ID, db)

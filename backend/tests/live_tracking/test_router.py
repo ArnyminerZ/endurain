@@ -196,7 +196,7 @@ class TestLifecycle:
 
 
 class TestPublicEndpoint:
-    @pytest.mark.parametrize("token", ["garbage", "a" * 32 + ".b", "a" * 101])
+    @pytest.mark.parametrize("token", ["garbage", "a" * 75, "a" * 32 + ".b", "a" * 101])
     def test_forged_tokens_are_404_or_422_without_detail(self, client, token):
         response = client.get(f"/public/live/{token}")
         assert response.status_code in (404, 422)

@@ -15,7 +15,7 @@ A session that goes quiet for `LIVE_TRACKING_STALE_MINUTES` or outlives `LIVE_TR
 
 ## Share links
 
-The link is `{ENDURAIN_HOST}/live/<token>`. The token is `<session id>.<HMAC>`, derived from the session id and `SECRET_KEY`, so nothing is stored and the owner can always read the link back. Rotating `SECRET_KEY` invalidates links of running sessions.
+The link is `{ENDURAIN_HOST}/live/<token>`. The token is the session id (32 hex characters) followed directly by an HMAC (43 characters), derived from the session id and `SECRET_KEY`, so nothing is stored and the owner can always read the link back. Rotating `SECRET_KEY` invalidates links of running sessions.
 
 ## Settings
 
