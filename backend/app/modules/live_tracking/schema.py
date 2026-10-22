@@ -83,7 +83,7 @@ class LiveSessionStart(BaseModel):
     """The body that starts a live session.
 
     Attributes:
-        activity_type: Activity type name (e.g. ``Run``); unknown names become ``Workout``.
+        activity_type: Activity type label shown to viewers (e.g. ``Run``).
         name: Optional display name of the workout.
         notify_contact_ids: Contacts to email; ``None`` means every contact.
     """
@@ -147,20 +147,6 @@ class LivePushResult(BaseModel):
 
     accepted: int
     total_points: int
-
-
-class LiveSessionStopped(BaseModel):
-    """The response to stopping a session.
-
-    Attributes:
-        session: The ended session.
-        activity_ids: Ids of the activities created from the session.
-        discarded: True when there were too few points to make an activity.
-    """
-
-    session: LiveSessionRead
-    activity_ids: list[int]
-    discarded: bool
 
 
 class LiveContactCreate(BaseModel):

@@ -93,7 +93,7 @@ def push_points(
 
 @router.post(
     "/sessions/{session_id}/stop",
-    response_model=live_tracking_schema.LiveSessionStopped,
+    response_model=live_tracking_schema.LiveSessionRead,
 )
 @core_rate_limit.limiter.limit(core_rate_limit.WRITE)
 def stop_session(
@@ -102,11 +102,10 @@ def stop_session(
     _check_scopes: Annotated[Callable, Security(auth_dependencies.check_scopes, scopes=["live:write"])],
     token_user_id: Annotated[int, Depends(auth_dependencies.get_sub_from_access_token)],
     db: Annotated[Session, Depends(core_database.get_db)],
-) -> live_tracking_schema.LiveSessionStopped:
-    """Stop the session: the share link dies and the track becomes an activity.
+) -> live_tracking_schema.LiveSessionRead:
+    """Stop the session: the share link dies and the live points are deleted.
 
-    If the activity could not be created the points are kept; calling stop again
-    retries.
+    No activity is created; the client uploads its own recording as usual.
     """
     return live_tracking_service.stop_session(session_id, token_user_id, db)
 
@@ -124,7 +123,7 @@ def cancel_session(
     token_user_id: Annotated[int, Depends(auth_dependencies.get_sub_from_access_token)],
     db: Annotated[Session, Depends(core_database.get_db)],
 ) -> None:
-    """Cancel the session and delete its points without creating an activity."""
+    """Cancel the session and delete it with its points."""
     live_tracking_service.cancel_session(session_id, token_user_id, db)
 
 

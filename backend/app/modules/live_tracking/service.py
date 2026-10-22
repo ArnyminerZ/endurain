@@ -4,16 +4,15 @@ Owns the transaction for every write. The share link is derived, not stored (see
 :mod:`modules.live_tracking.share_token`), so the link dies simply because the
 session is no longer active.
 
-A session ends in one of three ways, all through :func:`_finish_session`: the
-owner stops it, the owner cancels it (no activity), or the scheduler ends it
-because it expired or went quiet. A stopped session becomes a normal activity
-through the ingestion pipeline and its live points are then deleted.
+A session ends in one of three ways, all through :func:`_end_session`: the
+owner stops it, the owner cancels it, or the scheduler ends it because it
+expired or went quiet. Live data is never turned into an activity: the client
+uploads its own recording through the normal upload when the workout is done,
+so ending a session only kills the link and deletes the live points.
 """
 
-import tempfile
 import uuid
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 
 import jasil.providers as platform_providers
 from sqlalchemy.orm import Session
@@ -23,12 +22,10 @@ import core.exceptions as core_exceptions
 import core.i18n as core_i18n
 import core.logger as core_logger
 import core.mail as core_mail
-import modules.activities.activity_ingestion.integration_service as activity_ingestion_integration
 import modules.live_tracking.constants as live_tracking_constants
 import modules.live_tracking.crud as live_tracking_crud
 import modules.live_tracking.email_messages as live_tracking_email_messages
 import modules.live_tracking.event_publishers as live_tracking_event_publishers
-import modules.live_tracking.gpx_computation as live_tracking_gpx_computation
 import modules.live_tracking.schema as live_tracking_schema
 import modules.live_tracking.share_token as live_tracking_share_token
 import modules.users.users.integration_service as users_integration
@@ -250,62 +247,30 @@ def get_active_view(user_id: int, db: Session) -> live_tracking_schema.LiveSessi
     return get_owner_view(session.id, user_id, None, db)
 
 
-def _finish_session(
-    session: live_tracking_schema.LiveSessionRead, db: Session
-) -> live_tracking_schema.LiveSessionStopped:
-    """End a session and turn its points into an activity.
+def _end_session(session: live_tracking_schema.LiveSessionRead, db: Session) -> live_tracking_schema.LiveSessionRead:
+    """End a session: the share link dies and its live points are deleted.
 
-    Ending commits first, so the share link is dead even if ingestion fails. When
-    ingestion fails the points are kept and the session stays ended, so a second
-    stop retries the ingestion.
+    No activity is created from the live data. The client records the workout
+    itself and uploads it through the normal activity upload when it is done.
+    Ending an already ended session is a no-op, so a retried stop is harmless.
 
     Args:
-        session: The session to finish.
+        session: The session to end.
         db: Database session.
 
     Returns:
-        The ended session and the activities created from it.
-
-    Raises:
-        ProcessingError: When the points could not be turned into an activity.
+        The ended session.
     """
     if session.status == live_tracking_constants.SessionStatus.ACTIVE:
         live_tracking_crud.end_session(session.id, _now(), db)
-        db.commit()
-    ended = live_tracking_crud.get_session(session.id, db) or session
-
-    if live_tracking_crud.count_points(session.id, db) < live_tracking_constants.MIN_POINTS_FOR_ACTIVITY:
-        live_tracking_crud.delete_points(session.id, db)
-        db.commit()
-        return live_tracking_schema.LiveSessionStopped(session=ended, activity_ids=[], discarded=True)
-
-    points = live_tracking_crud.list_points(session.id, db, limit=live_tracking_constants.MAX_POINTS_PER_SESSION)
-    gpx = live_tracking_gpx_computation.build_gpx(points, session.name, session.activity_type)
-    with tempfile.TemporaryDirectory(prefix="live_tracking_") as directory:
-        path = Path(directory) / "live.gpx"
-        path.write_text(gpx, encoding="utf-8")
-        activities = activity_ingestion_integration.ingest_activity_file(
-            session.user_id,
-            str(path),
-            db,
-            source=activity_ingestion_integration.UploadSource(activity_name=session.name),
-        )
-    if activities is None:
-        raise core_exceptions.ProcessingError("The recorded points could not be turned into an activity")
-
     live_tracking_crud.delete_points(session.id, db)
     db.commit()
-    logger.info(
-        "Live session finished",
-        extra=core_logger.context(user_id=session.user_id, session_id=session.id, activities=len(activities)),
-    )
-    return live_tracking_schema.LiveSessionStopped(
-        session=ended, activity_ids=[activity.id for activity in activities if activity.id], discarded=False
-    )
+    logger.info("Live session ended", extra=core_logger.context(user_id=session.user_id, session_id=session.id))
+    return live_tracking_crud.get_session(session.id, db) or session
 
 
-def stop_session(session_id: str, user_id: int, db: Session) -> live_tracking_schema.LiveSessionStopped:
-    """Stop the user's session and create the activity.
+def stop_session(session_id: str, user_id: int, db: Session) -> live_tracking_schema.LiveSessionRead:
+    """Stop the user's session; the share link stops working and the live points are deleted.
 
     Args:
         session_id: The session UUID string.
@@ -313,17 +278,16 @@ def stop_session(session_id: str, user_id: int, db: Session) -> live_tracking_sc
         db: Database session.
 
     Returns:
-        The ended session and the created activity ids.
+        The ended session.
 
     Raises:
         AccessConcealedError: When the session is not the user's.
-        ProcessingError: When the activity could not be created.
     """
-    return _finish_session(_get_owned_session(session_id, user_id, db), db)
+    return _end_session(_get_owned_session(session_id, user_id, db), db)
 
 
 def cancel_session(session_id: str, user_id: int, db: Session) -> None:
-    """Delete the user's session and its points without creating an activity.
+    """Delete the user's session and its points.
 
     Args:
         session_id: The session UUID string.
@@ -353,7 +317,7 @@ def finish_stale_sessions(db: Session) -> int:
     finished = 0
     for session in live_tracking_crud.list_sessions_to_finish(now, stale_before, db):
         try:
-            _finish_session(session, db)
+            _end_session(session, db)
             finished += 1
         except Exception as err:
             db.rollback()

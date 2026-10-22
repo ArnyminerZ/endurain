@@ -125,50 +125,23 @@ class TestPushPoints:
 
 
 class TestStopSession:
-    def test_creates_activity_and_deletes_points(self, db, now, no_mail):
+    def test_ends_session_deletes_points_and_creates_no_activity(self, db, now, no_mail):
         started = _start(db, activity_type="Run", name="Morning")
         live_tracking_service.push_points(started.session.id, USER_ID, push(track(now)), db)
-        activity = SimpleNamespace(id=42)
-        with patch.object(
-            live_tracking_service.activity_ingestion_integration, "ingest_activity_file", return_value=[activity]
-        ) as ingest:
-            stopped = live_tracking_service.stop_session(started.session.id, USER_ID, db)
-        assert stopped.activity_ids == [42]
-        assert stopped.discarded is False
-        assert stopped.session.status == live_tracking_constants.SessionStatus.ENDED
-        assert ingest.call_args.kwargs["source"].activity_name == "Morning"
-        assert live_tracking_crud.count_points(started.session.id, db) == 0
-
-    def test_too_few_points_are_discarded(self, db, now, no_mail):
-        started = _start(db)
-        live_tracking_service.push_points(started.session.id, USER_ID, push(track(now, 1)), db)
-        with patch.object(live_tracking_service.activity_ingestion_integration, "ingest_activity_file") as ingest:
-            stopped = live_tracking_service.stop_session(started.session.id, USER_ID, db)
-        ingest.assert_not_called()
-        assert stopped.discarded is True
-        assert stopped.activity_ids == []
-
-    def test_failed_ingestion_keeps_points_and_kills_link(self, db, now, no_mail):
-        started = _start(db)
-        live_tracking_service.push_points(started.session.id, USER_ID, push(track(now)), db)
         token = started.share_url.rsplit("/live/", 1)[1]
-        with (
-            patch.object(
-                live_tracking_service.activity_ingestion_integration, "ingest_activity_file", return_value=None
-            ),
-            pytest.raises(core_exceptions.ProcessingError),
-        ):
-            live_tracking_service.stop_session(started.session.id, USER_ID, db)
-        assert live_tracking_crud.count_points(started.session.id, db) == 3
+        assert not hasattr(live_tracking_service, "activity_ingestion_integration")
+        stopped = live_tracking_service.stop_session(started.session.id, USER_ID, db)
+        assert stopped.status == live_tracking_constants.SessionStatus.ENDED
+        assert stopped.ended_at is not None
+        assert live_tracking_crud.count_points(started.session.id, db) == 0
         with pytest.raises(core_exceptions.NotFoundError):
             live_tracking_service.get_public_view(token, None, db)
-        with patch.object(
-            live_tracking_service.activity_ingestion_integration,
-            "ingest_activity_file",
-            return_value=[SimpleNamespace(id=1)],
-        ):
-            retried = live_tracking_service.stop_session(started.session.id, USER_ID, db)
-        assert retried.activity_ids == [1]
+
+    def test_stopping_twice_is_harmless(self, db, no_mail):
+        started = _start(db)
+        first = live_tracking_service.stop_session(started.session.id, USER_ID, db)
+        second = live_tracking_service.stop_session(started.session.id, USER_ID, db)
+        assert second.ended_at == first.ended_at
 
     def test_other_user_cannot_stop(self, db, no_mail):
         started = _start(db)
@@ -239,15 +212,9 @@ class TestStaleSessions:
     def test_silent_session_is_finished_and_link_dies(self, db, now, no_mail):
         started = _start(db)
         live_tracking_service.push_points(started.session.id, USER_ID, push(track(now)), db)
-        with (
-            patch.object(live_tracking_service, "_now", return_value=now + timedelta(hours=1)),
-            patch.object(
-                live_tracking_service.activity_ingestion_integration,
-                "ingest_activity_file",
-                return_value=[SimpleNamespace(id=5)],
-            ),
-        ):
+        with patch.object(live_tracking_service, "_now", return_value=now + timedelta(hours=1)):
             assert live_tracking_service.finish_stale_sessions(db) == 1
+        assert live_tracking_crud.count_points(started.session.id, db) == 0
         assert (
             live_tracking_crud.get_session(started.session.id, db).status == live_tracking_constants.SessionStatus.ENDED
         )
@@ -260,7 +227,7 @@ class TestStaleSessions:
         _start(db)
         with (
             patch.object(live_tracking_service, "_now", return_value=now + timedelta(days=2)),
-            patch.object(live_tracking_service, "_finish_session", side_effect=RuntimeError("boom")),
+            patch.object(live_tracking_service, "_end_session", side_effect=RuntimeError("boom")),
         ):
             assert live_tracking_service.finish_stale_sessions(db) == 0
 

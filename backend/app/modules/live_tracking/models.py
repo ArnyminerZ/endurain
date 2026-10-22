@@ -71,7 +71,7 @@ class LiveSession(Base, TimestampMixin):
         String(length=50),
         nullable=False,
         default=live_tracking_constants.DEFAULT_ACTIVITY_TYPE,
-        comment="Activity type name used when the session becomes an activity",
+        comment="Activity type name shown to viewers",
     )
     name: Mapped[str | None] = mapped_column(
         String(length=150),

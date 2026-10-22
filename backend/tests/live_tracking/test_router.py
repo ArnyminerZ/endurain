@@ -84,14 +84,9 @@ class TestLifecycle:
         newer = client.get(f"/public/live/{token}", params={"since": at})
         assert len(newer.json()["points"]) == 1
 
-        with patch.object(
-            live_tracking_service.activity_ingestion_integration,
-            "ingest_activity_file",
-            return_value=[SimpleNamespace(id=9)],
-        ):
-            stopped = client.post(f"/live/sessions/{session_id}/stop")
+        stopped = client.post(f"/live/sessions/{session_id}/stop")
         assert stopped.status_code == 200
-        assert stopped.json()["activity_ids"] == [9]
+        assert stopped.json()["status"] == "ended"
 
         assert client.get(f"/public/live/{token}").status_code == 404
 

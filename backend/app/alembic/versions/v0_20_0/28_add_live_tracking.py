@@ -6,7 +6,7 @@ Create Date: 2026-10-22 00:00:00.000000
 
 Backs real-time position sharing. ``live_sessions`` is one recording that viewers
 can follow through a share link, ``live_points`` holds the positions pushed while
-it is live (deleted once the session becomes an activity), and ``live_contacts``
+it is live (deleted when the session ends), and ``live_contacts``
 is the per-user list of people emailed when a session starts.
 
 The share link is derived from the session id and the server secret, so no token
@@ -48,7 +48,7 @@ def upgrade() -> None:
             "activity_type",
             sa.String(length=50),
             nullable=False,
-            comment="Activity type name used when the session becomes an activity",
+            comment="Activity type name shown to viewers",
         ),
         sa.Column("name", sa.String(length=150), nullable=True, comment="Optional display name of the workout"),
         sa.Column("started_at", sa.DateTime(timezone=True), nullable=False, comment="When the session started"),

@@ -2617,7 +2617,7 @@ export interface paths {
         post?: never;
         /**
          * Cancel Session
-         * @description Cancel the session and delete its points without creating an activity.
+         * @description Cancel the session and delete it with its points.
          */
         delete: operations["cancel_session_api_v1_live_sessions__session_id__delete"];
         options?: never;
@@ -2656,10 +2656,9 @@ export interface paths {
         put?: never;
         /**
          * Stop Session
-         * @description Stop the session: the share link dies and the track becomes an activity.
+         * @description Stop the session: the share link dies and the live points are deleted.
          *
-         *     If the activity could not be created the points are kept; calling stop again
-         *     retries.
+         *     No activity is created; the client uploads its own recording as usual.
          */
         post: operations["stop_session_api_v1_live_sessions__session_id__stop_post"];
         delete?: never;
@@ -9192,7 +9191,7 @@ export interface components {
          * @description The body that starts a live session.
          *
          *     Attributes:
-         *         activity_type: Activity type name (e.g. ``Run``); unknown names become ``Workout``.
+         *         activity_type: Activity type label shown to viewers (e.g. ``Run``).
          *         name: Optional display name of the workout.
          *         notify_contact_ids: Contacts to email; ``None`` means every contact.
          */
@@ -9225,22 +9224,6 @@ export interface components {
             session: components["schemas"]["LiveSessionRead"];
             /** Share Url */
             share_url: string;
-        };
-        /**
-         * LiveSessionStopped
-         * @description The response to stopping a session.
-         *
-         *     Attributes:
-         *         session: The ended session.
-         *         activity_ids: Ids of the activities created from the session.
-         *         discarded: True when there were too few points to make an activity.
-         */
-        LiveSessionStopped: {
-            /** Activity Ids */
-            activity_ids: number[];
-            /** Discarded */
-            discarded: boolean;
-            session: components["schemas"]["LiveSessionRead"];
         };
         /**
          * LogoutResponse
@@ -16623,7 +16606,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LiveSessionStopped"];
+                    "application/json": components["schemas"]["LiveSessionRead"];
                 };
             };
             /** @description Validation Error */

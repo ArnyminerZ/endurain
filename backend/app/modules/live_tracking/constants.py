@@ -28,14 +28,11 @@ MAX_POINT_FUTURE_SKEW = timedelta(minutes=5)
 #: How long before the session start a buffered point is still accepted.
 MAX_POINT_BEFORE_START = timedelta(minutes=5)
 
-#: Fewest points that make a worthwhile activity; fewer are discarded on stop.
-MIN_POINTS_FOR_ACTIVITY = 2
-
-#: How long an ended session whose activity could not be created keeps its points.
+#: How long an ended session row is kept before the scheduler purges it.
 ENDED_RETENTION = timedelta(hours=24)
 
 #: Most points the public view returns in one response.
 MAX_PUBLIC_POINTS = 5000
 
-#: Activity type used when the client does not name one (maps to "Workout").
+#: Activity type label used when the client does not name one.
 DEFAULT_ACTIVITY_TYPE = "Workout"
