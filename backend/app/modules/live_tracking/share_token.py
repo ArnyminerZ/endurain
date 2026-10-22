@@ -1,9 +1,13 @@
 """Stateless share tokens for live sessions.
 
-A token is ``<session uuid hex>.<mac>`` where the mac is an HMAC of the session id
+A token is ``<session uuid hex><mac>`` where the mac is an HMAC of the session id
 under the server secret. Nothing secret is stored: the server can re-derive the
 link for the owner, and a guessed or forged token fails the mac check. The link
 dies because the session ends, not because a token is deleted.
+
+The two parts have fixed lengths and are joined without a separator. A ``.`` in
+the token would make the app's frontend fallback (``core.router``) treat the link
+as a request for a static file and answer 404 instead of serving the viewer page.
 """
 
 import base64
@@ -12,6 +16,11 @@ import hmac
 import uuid
 
 _MAC_CONTEXT = b"endurain.live_tracking.share.v1:"
+
+#: Length of a UUID rendered as hex.
+_ID_LENGTH = 32
+#: Length of an unpadded base64url SHA-256 digest.
+_MAC_LENGTH = 43
 
 
 def _mac(session_id: str, secret: str) -> str:
@@ -38,7 +47,7 @@ def build_token(session_id: str, secret: str) -> str:
     Returns:
         The token to place in the public link.
     """
-    return f"{uuid.UUID(session_id).hex}.{_mac(session_id, secret)}"
+    return f"{uuid.UUID(session_id).hex}{_mac(session_id, secret)}"
 
 
 def parse_token(token: str, secret: str) -> str | None:
@@ -51,9 +60,9 @@ def parse_token(token: str, secret: str) -> str | None:
     Returns:
         The session UUID string, or ``None`` for any malformed or forged token.
     """
-    head, separator, mac = token.partition(".")
-    if not separator or len(head) != 32:
+    if len(token) != _ID_LENGTH + _MAC_LENGTH:
         return None
+    head, mac = token[:_ID_LENGTH], token[_ID_LENGTH:]
     try:
         session_id = str(uuid.UUID(hex=head))
     except ValueError:
