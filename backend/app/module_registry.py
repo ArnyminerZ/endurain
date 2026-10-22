@@ -32,6 +32,8 @@ import modules.activities.activity_workout_steps.integration_service as activity
 import modules.activities.contributor_registry as activities_contributor_registry
 import modules.auth.password_reset_tokens.subscriber_registry as password_reset_tokens_subscriber_registry
 import modules.auth.sign_up_tokens.subscriber_registry as sign_up_tokens_subscriber_registry
+import modules.live_tracking.scheduled_jobs as live_tracking_scheduled_jobs
+import modules.live_tracking.subscriber_registry as live_tracking_subscriber_registry
 import modules.notifications.subscriber_registry as notifications_subscriber_registry
 
 logger = core_logger.get_logger(__name__)
@@ -202,6 +204,13 @@ MODULES: tuple[RuntimeModule, ...] = (
         register_bus=sign_up_tokens_subscriber_registry.register_bus_subscribers,
         register_durable=sign_up_tokens_subscriber_registry.register_durable_handlers,
         nets=sign_up_tokens_subscriber_registry.DURABLE_SUBSCRIBER_NETS,
+    ),
+    RuntimeModule(
+        name="live_tracking",
+        register_bus=live_tracking_subscriber_registry.register_bus_subscribers,
+        register_durable=live_tracking_subscriber_registry.register_durable_handlers,
+        nets=live_tracking_subscriber_registry.DURABLE_SUBSCRIBER_NETS,
+        recurring_jobs=live_tracking_scheduled_jobs.recurring_jobs,
     ),
     RuntimeModule(
         name="notifications",

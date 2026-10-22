@@ -40,6 +40,8 @@ import modules.auth.router as auth_router
 import modules.auth.sign_up_tokens.router as sign_up_tokens_router
 import modules.followers.router as followers_router
 import modules.garmin.router as garmin_router
+import modules.live_tracking.public_router as live_tracking_public_router
+import modules.live_tracking.router as live_tracking_router
 import modules.server_settings.router as server_settings_router
 import modules.strava.router as strava_router
 import modules.users.users_profile.router as users_profile_router
@@ -142,6 +144,13 @@ _TIERED_ENDPOINTS = [
     pytest.param(followers_router.accept_follow_request, core_rate_limit.WRITE, id="accept-follow-request"),
     pytest.param(followers_router.reject_follow_request, core_rate_limit.WRITE, id="reject-follow-request"),
     pytest.param(followers_router.delete_follow_relationship, core_rate_limit.WRITE, id="unfollow"),
+    pytest.param(live_tracking_router.start_session, core_rate_limit.WRITE, id="live-start"),
+    pytest.param(live_tracking_router.push_points, core_rate_limit.LIVE_PUSH, id="live-push"),
+    pytest.param(live_tracking_router.stop_session, core_rate_limit.WRITE, id="live-stop"),
+    pytest.param(live_tracking_router.cancel_session, core_rate_limit.WRITE, id="live-cancel"),
+    pytest.param(live_tracking_router.add_contact, core_rate_limit.WRITE, id="live-contact-add"),
+    pytest.param(live_tracking_router.remove_contact, core_rate_limit.WRITE, id="live-contact-remove"),
+    pytest.param(live_tracking_public_router.read_public_live_session, core_rate_limit.PUBLIC_VIEW, id="live-public"),
 ]
 
 

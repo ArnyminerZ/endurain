@@ -181,6 +181,16 @@ class Settings(BaseSettings):
     # --- Rate limiting ---
     RATE_LIMIT_ENABLED: bool = True
 
+    # --- Live tracking ---
+    # Master switch: when false, sessions cannot be started and share links 404.
+    LIVE_TRACKING_ENABLED: bool = True
+    # Hard cap on one session's length; the scheduler ends it after this.
+    LIVE_TRACKING_MAX_SESSION_HOURS: int = 24
+    # A session with no point for this long is ended by the scheduler.
+    LIVE_TRACKING_STALE_MINUTES: int = 30
+    # Most people one user can have on the notification list.
+    LIVE_TRACKING_MAX_CONTACTS: int = 20
+
     # --- Shared ephemeral state ---
     # One backend for rate-limit counters, auth lockout, pending-MFA, MFA
     # setup secrets, Garmin MFA codes, and websocket tickets. Selected by

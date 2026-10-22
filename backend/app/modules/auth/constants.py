@@ -65,6 +65,10 @@ FOLLOWERS_SCOPE: Final[tuple[str, ...]] = (
     "followers:read",
     "followers:write",
 )
+LIVE_TRACKING_SCOPE: Final[tuple[str, ...]] = (
+    "live:read",
+    "live:write",
+)
 HEALTH_SCOPE: Final[tuple[str, ...]] = (
     "health:read",
     "health:write",
@@ -94,6 +98,8 @@ SCOPE_DICT: Final[dict[str, str]] = {
     "activities:upload": "Upload privileges over activities",
     "followers:read": "Read privileges over the follower/following graph",
     "followers:write": "Follow, unfollow, accept and remove followers",
+    "live:read": "Read privileges over live tracking sessions and contacts",
+    "live:write": "Start, update, stop and cancel live tracking sessions and manage contacts",
     "health:read": "Read privileges over health data",
     "health:write": "Write privileges over health data",
     "health_targets:read": "Read privileges over health targets data",
@@ -110,6 +116,7 @@ REGULAR_ACCESS_SCOPE: Final[tuple[str, ...]] = (
     USERS_REGULAR_SCOPE
     + ACTIVITIES_SCOPE
     + FOLLOWERS_SCOPE
+    + LIVE_TRACKING_SCOPE
     + GEARS_SCOPE
     + IDENTITY_PROVIDERS_REGULAR_SCOPE
     + HEALTH_SCOPE

@@ -2515,6 +2515,158 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/live/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Contacts
+         * @description List the people emailed when a live session starts.
+         */
+        get: operations["list_contacts_api_v1_live_contacts_get"];
+        put?: never;
+        /**
+         * Add Contact
+         * @description Add a person to be emailed when a live session starts.
+         */
+        post: operations["add_contact_api_v1_live_contacts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/contacts/{contact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove Contact
+         * @description Remove a person from the notification list.
+         */
+        delete: operations["remove_contact_api_v1_live_contacts__contact_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Session
+         * @description Start a live session and email the chosen contacts.
+         *
+         *     Returns the public share link. A user can have one active session at a time.
+         */
+        post: operations["start_session_api_v1_live_sessions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/sessions/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Active Session
+         * @description Return the authenticated user's active session, its link and its track.
+         */
+        get: operations["read_active_session_api_v1_live_sessions_active_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/sessions/{session_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Session
+         * @description Watch one of the authenticated user's own sessions.
+         */
+        get: operations["read_session_api_v1_live_sessions__session_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Cancel Session
+         * @description Cancel the session and delete it with its points.
+         */
+        delete: operations["cancel_session_api_v1_live_sessions__session_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/sessions/{session_id}/points": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Push Points
+         * @description Push a batch of position updates. Resending stored points is harmless.
+         */
+        post: operations["push_points_api_v1_live_sessions__session_id__points_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/live/sessions/{session_id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop Session
+         * @description Stop the session: the share link dies and the live points are deleted.
+         *
+         *     No activity is created; the client uploads its own recording as usual.
+         */
+        post: operations["stop_session_api_v1_live_sessions__session_id__stop_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/mark_all_as_read": {
         parameters: {
             query?: never;
@@ -4064,6 +4216,29 @@ export interface paths {
          *             - 409 CONFLICT: Tokens already exchanged for this session
          */
         post: operations["exchange_tokens_for_session_api_v1_public_idp_session__session_id__tokens_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/live/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Public Live Session
+         * @description Return a live session by its share token.
+         *
+         *     Answers 404 for a forged, unknown, ended or expired link, all alike, so this
+         *     unauthenticated endpoint cannot be used to probe sessions.
+         */
+        get: operations["read_public_live_session_api_v1_public_live__token__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -8854,6 +9029,203 @@ export interface components {
             type_breakdown?: components["schemas"]["TypeBreakdownItem"][] | null;
         };
         /**
+         * LiveContactCreate
+         * @description The body that adds a contact.
+         */
+        LiveContactCreate: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * LiveContactRead
+         * @description A contact as returned to the owner.
+         */
+        LiveContactRead: {
+            /** Email */
+            email: string;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+        };
+        /**
+         * LivePointIn
+         * @description One position update pushed by the client.
+         *
+         *     Attributes:
+         *         recorded_at: When the device recorded the point (timezone-aware).
+         *         latitude: Latitude in degrees.
+         *         longitude: Longitude in degrees.
+         *         elevation: Elevation in meters.
+         *         speed: Speed in meters per second.
+         *         heart_rate: Heart rate in bpm.
+         *         cadence: Cadence.
+         *         temperature: Ambient temperature in degrees Celsius.
+         *         skin_temperature: Skin temperature in degrees Celsius.
+         */
+        LivePointIn: {
+            /** Cadence */
+            cadence?: number | null;
+            /** Elevation */
+            elevation?: number | null;
+            /** Heart Rate */
+            heart_rate?: number | null;
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Skin Temperature */
+            skin_temperature?: number | null;
+            /** Speed */
+            speed?: number | null;
+            /** Temperature */
+            temperature?: number | null;
+        };
+        /**
+         * LivePointRead
+         * @description A stored point as returned to clients.
+         */
+        LivePointRead: {
+            /** Cadence */
+            cadence?: number | null;
+            /** Elevation */
+            elevation?: number | null;
+            /** Heart Rate */
+            heart_rate?: number | null;
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Skin Temperature */
+            skin_temperature?: number | null;
+            /** Speed */
+            speed?: number | null;
+            /** Temperature */
+            temperature?: number | null;
+        };
+        /**
+         * LivePointsPush
+         * @description A batch of points pushed in one request.
+         *
+         *     Attributes:
+         *         points: The points; resending one already stored is harmless.
+         */
+        LivePointsPush: {
+            /** Points */
+            points: components["schemas"]["LivePointIn"][];
+        };
+        /**
+         * LivePushResult
+         * @description The response to a push.
+         *
+         *     Attributes:
+         *         accepted: Points stored by this request (duplicates are not counted).
+         *         total_points: Points stored for the session.
+         */
+        LivePushResult: {
+            /** Accepted */
+            accepted: number;
+            /** Total Points */
+            total_points: number;
+        };
+        /**
+         * LiveSessionOwnerView
+         * @description The owner's view of a session: the session, its link and its points.
+         */
+        LiveSessionOwnerView: {
+            /** Points */
+            points: components["schemas"]["LivePointRead"][];
+            session: components["schemas"]["LiveSessionRead"];
+            /** Share Url */
+            share_url: string;
+        };
+        /**
+         * LiveSessionRead
+         * @description A live session as the owner sees it.
+         */
+        LiveSessionRead: {
+            /** Activity Type */
+            activity_type: string;
+            /** Ended At */
+            ended_at?: string | null;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Id */
+            id: string;
+            /**
+             * Last Update At
+             * Format: date-time
+             */
+            last_update_at: string;
+            /** Name */
+            name?: string | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            status: components["schemas"]["SessionStatus"];
+            /** User Id */
+            user_id: number;
+        };
+        /**
+         * LiveSessionStart
+         * @description The body that starts a live session.
+         *
+         *     Attributes:
+         *         activity_type: Activity type label shown to viewers (e.g. ``Run``).
+         *         name: Optional display name of the workout.
+         *         notify_contact_ids: Contacts to email; ``None`` means every contact.
+         */
+        LiveSessionStart: {
+            /**
+             * Activity Type
+             * @default Workout
+             */
+            activity_type: string;
+            /** Name */
+            name?: string | null;
+            /** Notify Contact Ids */
+            notify_contact_ids?: number[] | null;
+        };
+        /**
+         * LiveSessionStarted
+         * @description The response to starting a session.
+         *
+         *     Attributes:
+         *         session: The created session.
+         *         share_url: The public link to hand out.
+         *         notified_contacts: How many contacts an email was queued for.
+         *         email_enabled: Whether the server can send email at all.
+         */
+        LiveSessionStarted: {
+            /** Email Enabled */
+            email_enabled: boolean;
+            /** Notified Contacts */
+            notified_contacts: number;
+            session: components["schemas"]["LiveSessionRead"];
+            /** Share Url */
+            share_url: string;
+        };
+        /**
          * LogoutResponse
          * @description Response payload returned by the logout endpoint.
          *
@@ -9482,6 +9854,43 @@ export interface components {
             username?: string | null;
         };
         /**
+         * PublicLiveView
+         * @description What an anonymous viewer of the share link sees.
+         *
+         *     Attributes:
+         *         athlete: First name of the athlete.
+         *         activity_type: Activity type name.
+         *         name: Display name of the workout.
+         *         started_at: When the session started.
+         *         last_update_at: When the last point arrived.
+         *         latest: The newest point, if any.
+         *         points: The track (only points after ``since`` when it was given).
+         *         total_points: Points stored for the session.
+         */
+        PublicLiveView: {
+            /** Activity Type */
+            activity_type: string;
+            /** Athlete */
+            athlete: string;
+            /**
+             * Last Update At
+             * Format: date-time
+             */
+            last_update_at: string;
+            latest?: components["schemas"]["LivePointRead"] | null;
+            /** Name */
+            name?: string | null;
+            /** Points */
+            points: components["schemas"]["LivePointRead"][];
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Total Points */
+            total_points: number;
+        };
+        /**
          * RelationshipRead
          * @description The authenticated user's relationship with another user, both directions.
          *
@@ -9838,6 +10247,16 @@ export interface components {
              */
             units: components["schemas"]["Units"];
         };
+        /**
+         * SessionStatus
+         * @description Lifecycle status of a live session.
+         *
+         *     Attributes:
+         *         ACTIVE: The session is live and its share link works.
+         *         ENDED: The session was stopped, cancelled or expired; the link is dead.
+         * @enum {string}
+         */
+        SessionStatus: "active" | "ended";
         /**
          * SignUpConfirm
          * @description Request schema for confirming a sign-up.
@@ -15861,6 +16280,355 @@ export interface operations {
             };
         };
     };
+    list_contacts_api_v1_live_contacts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveContactRead"][];
+                };
+            };
+            /** @description Unexpected error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    add_contact_api_v1_live_contacts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveContactCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveContactRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unexpected error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    remove_contact_api_v1_live_contacts__contact_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contact_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unexpected error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    start_session_api_v1_live_sessions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveSessionStart"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveSessionStarted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unexpected error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    read_active_session_api_v1_live_sessions_active_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveSessionOwnerView"];
+                };
+            };
+            /** @description Unexpected error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    read_session_api_v1_live_sessions__session_id__get: {
+        parameters: {
+            query?: {
+                /** @description Only points recorded after this time */
+                since?: string | null;
+            };
+            header?: never;
+            path: {
+                /** @description Live session UUID */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveSessionOwnerView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unexpected error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    cancel_session_api_v1_live_sessions__session_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Live session UUID */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unexpected error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    push_points_api_v1_live_sessions__session_id__points_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Live session UUID */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LivePointsPush"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LivePushResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unexpected error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    stop_session_api_v1_live_sessions__session_id__stop_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Live session UUID */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveSessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unexpected error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
     mark_all_notifications_as_read_api_v1_notifications_mark_all_as_read_put: {
         parameters: {
             query?: never;
@@ -17772,6 +18540,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TokenExchangeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unexpected error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    read_public_live_session_api_v1_public_live__token__get: {
+        parameters: {
+            query?: {
+                /** @description Only points recorded after this time */
+                since?: string | null;
+            };
+            header?: never;
+            path: {
+                /** @description Share token from the link */
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicLiveView"];
                 };
             };
             /** @description Validation Error */

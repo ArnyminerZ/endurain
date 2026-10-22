@@ -130,6 +130,7 @@ nav:
     - Garmin Connect: reference/garmin.md
     - Gears: reference/gears.md
     - Health: reference/health.md
+    - Live tracking: reference/live-tracking.md
     - Users: reference/users.md
     - Migrations: reference/migrations.md
     - Notifications: reference/notifications.md

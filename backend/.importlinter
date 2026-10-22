@@ -23,6 +23,7 @@ source_modules =
     core
     modules.followers
     modules.garmin
+    modules.live_tracking
     modules.gears
     modules.health
     modules.notifications

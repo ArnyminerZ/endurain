@@ -64,6 +64,14 @@ UPLOAD: str = "20/minute"
 #: throttled/banned) with almost no local cost.
 PROVIDER_SYNC: str = "6/minute"
 
+#: Live tracking position pushes — a client sends a batch every few seconds
+#: while recording, so this is looser than WRITE.
+LIVE_PUSH: str = "120/minute"
+
+#: Unauthenticated live tracking viewers polling a share link. Keyed per IP, and
+#: sized for a few viewers behind one address polling every few seconds.
+PUBLIC_VIEW: str = "60/minute"
+
 
 @functools.cache
 def _jwt_verification_key() -> OctKey | None:

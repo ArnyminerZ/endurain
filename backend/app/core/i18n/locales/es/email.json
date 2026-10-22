@@ -45,5 +45,13 @@
   "test_email.greeting": "Hola {name},",
   "test_email.intro": "Este es un correo de prueba enviado desde los ajustes del servidor de Endurain. Si lo estás leyendo, Endurain puede enviar correos a través de tu servidor SMTP.",
   "test_email.detail_label": "Servidor SMTP:",
-  "test_email.ignore": "No se necesita ninguna acción."
+  "test_email.ignore": "No se necesita ninguna acción.",
+
+  "live_tracking.subject": "{athlete} está compartiendo una actividad en directo",
+  "live_tracking.heading": "Seguimiento en directo",
+  "live_tracking.greeting": "Hola {name},",
+  "live_tracking.intro": "{athlete} ha empezado a compartir su ubicación en directo. Puedes seguirle en el mapa:",
+  "live_tracking.intro_named": "{athlete} ha empezado a compartir su ubicación en directo durante «{workout}». Puedes seguirle en el mapa:",
+  "live_tracking.cta": "Seguir en directo",
+  "live_tracking.notice": "Este enlace solo funciona mientras se graba la actividad y deja de funcionar en cuanto termina."
 }
