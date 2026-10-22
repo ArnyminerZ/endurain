@@ -28,12 +28,15 @@ _IMPORTLINTER = pathlib.Path(".importlinter")
 #: ``jasil`` when they are generic enough to be shared by other products.
 _ALLOWED_CORE: dict[str, str] = {
     "core.calendar": "Period boundaries for activity summaries.",
+    "core.email_templates": "The shared branded email layout used by the live tracking notification.",
     "core.etag": "Conditional-response helpers for activity routes.",
     "core.event_metadata": "Event envelope metadata shared by every publisher.",
     "core.exceptions": "The domain error vocabulary raised by crud and service.",
     "core.file_uploads": "The only path an ``UploadFile`` may take.",
     "core.hashing": "Content digests for upload and media deduplication.",
+    "core.i18n": "Localized email catalogs for the live tracking notification.",
     "core.logger": "Structured logging.",
+    "core.mail": "``send_email`` and the SMTP-configured check for the live tracking notification.",
     "core.pagination": "Page and cursor primitives.",
     "core.sanitization": "Cleaning user-supplied text before storage.",
     "core.signing": "The token-signing primitive behind thumbnail URLs.",

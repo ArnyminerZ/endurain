@@ -5,11 +5,18 @@ from importlib import import_module
 
 import modules.activities.model_registry as activities_model_registry
 import modules.followers.model_registry as follower_models
+import modules.live_tracking.model_registry as live_tracking_models
 
 _APP_ROOT = pathlib.Path(__file__).resolve().parent
 _MODULES_ROOT = _APP_ROOT / "modules"
 
-_CONVERTED_MODEL_MODULES = frozenset((*activities_model_registry.MODEL_MODULES, *follower_models.MODEL_MODULES))
+_CONVERTED_MODEL_MODULES = frozenset(
+    (
+        *activities_model_registry.MODEL_MODULES,
+        *follower_models.MODEL_MODULES,
+        *live_tracking_models.MODEL_MODULES,
+    )
+)
 
 
 def _legacy_model_modules() -> tuple[str, ...]:

@@ -37,6 +37,8 @@ import modules.health.health_targets.router as health_targets_router
 import modules.health.health_water.router as health_water_router
 import modules.health.health_weight.router as health_weight_router
 import modules.health.router as health_router
+import modules.live_tracking.public_router as live_tracking_public_router
+import modules.live_tracking.router as live_tracking_router
 import modules.notifications.router as notifications_router
 import modules.server_settings.public_router as server_settings_public_router
 import modules.server_settings.router as server_settings_router
@@ -181,6 +183,12 @@ router.include_router(
     followers_router.router,
     prefix=core_config.ROOT_PATH + "/followers",
     tags=["followers"],
+    dependencies=[Depends(auth_dependencies.validate_access_token)],
+)
+router.include_router(
+    live_tracking_router.router,
+    prefix=core_config.ROOT_PATH + "/live",
+    tags=["live_tracking"],
     dependencies=[Depends(auth_dependencies.validate_access_token)],
 )
 router.include_router(
@@ -383,6 +391,11 @@ router.include_router(
     identity_providers_public_router.router,
     prefix=core_config.ROOT_PATH + "/public/idp",
     tags=["identity_providers_public"],
+)
+router.include_router(
+    live_tracking_public_router.router,
+    prefix=core_config.ROOT_PATH + "/public/live",
+    tags=["public_live_tracking"],
 )
 router.include_router(
     server_settings_public_router.router,
