@@ -32,6 +32,8 @@ class LivePointIn(BaseModel):
         speed: Speed in meters per second.
         heart_rate: Heart rate in bpm.
         cadence: Cadence.
+        temperature: Ambient temperature in degrees Celsius.
+        skin_temperature: Skin temperature in degrees Celsius.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -43,6 +45,8 @@ class LivePointIn(BaseModel):
     speed: float | None = Field(default=None, ge=0, le=200)
     heart_rate: int | None = Field(default=None, ge=0, le=300)
     cadence: int | None = Field(default=None, ge=0, le=300)
+    temperature: float | None = Field(default=None, ge=-90, le=80)
+    skin_temperature: float | None = Field(default=None, ge=-20, le=60)
 
 
 class LivePointsPush(BaseModel):
@@ -69,6 +73,8 @@ class LivePointRead(BaseModel):
     speed: float | None = None
     heart_rate: int | None = None
     cadence: int | None = None
+    temperature: float | None = None
+    skin_temperature: float | None = None
 
     _utc = field_validator("recorded_at")(_as_utc)
 

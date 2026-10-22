@@ -95,6 +95,28 @@ class TestLifecycle:
 
         assert client.get(f"/public/live/{token}").status_code == 404
 
+    def test_temperatures_round_trip_to_the_viewer(self, client, now):
+        started = _start(client)
+        token = started["share_url"].rsplit("/live/", 1)[1]
+        point = {
+            "recorded_at": (now - timedelta(seconds=5)).isoformat(),
+            "latitude": 39.0,
+            "longitude": -0.5,
+            "temperature": 21.5,
+            "skin_temperature": 33.4,
+        }
+        pushed = client.post(f"/live/sessions/{started['session']['id']}/points", json={"points": [point]})
+        assert pushed.status_code == 200
+        latest = client.get(f"/public/live/{token}").json()["latest"]
+        assert (latest["temperature"], latest["skin_temperature"]) == (21.5, 33.4)
+
+    def test_rejects_implausible_temperatures(self, client, now):
+        started = _start(client)
+        url = f"/live/sessions/{started['session']['id']}/points"
+        base = {"recorded_at": now.isoformat(), "latitude": 1, "longitude": 1}
+        assert client.post(url, json={"points": [{**base, "temperature": 500}]}).status_code == 422
+        assert client.post(url, json={"points": [{**base, "skin_temperature": 99}]}).status_code == 422
+
     def test_one_active_session(self, client):
         _start(client)
         assert client.post("/live/sessions", json={}).status_code == 409

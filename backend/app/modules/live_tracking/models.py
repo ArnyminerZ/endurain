@@ -113,6 +113,8 @@ class LivePoint(Base):
         speed: Speed in meters per second.
         heart_rate: Heart rate in bpm.
         cadence: Cadence in rpm/spm.
+        temperature: Ambient temperature in degrees Celsius.
+        skin_temperature: Skin temperature in degrees Celsius.
     """
 
     __tablename__ = "live_points"
@@ -136,6 +138,12 @@ class LivePoint(Base):
     speed: Mapped[float | None] = mapped_column(Float, nullable=True, comment="Speed in meters per second")
     heart_rate: Mapped[int | None] = mapped_column(SmallInteger, nullable=True, comment="Heart rate in bpm")
     cadence: Mapped[int | None] = mapped_column(SmallInteger, nullable=True, comment="Cadence")
+    temperature: Mapped[float | None] = mapped_column(
+        Float, nullable=True, comment="Ambient temperature in degrees Celsius"
+    )
+    skin_temperature: Mapped[float | None] = mapped_column(
+        Float, nullable=True, comment="Skin temperature in degrees Celsius"
+    )
 
 
 class LiveContact(Base, TimestampMixin):

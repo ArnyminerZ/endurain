@@ -9066,6 +9066,8 @@ export interface components {
          *         speed: Speed in meters per second.
          *         heart_rate: Heart rate in bpm.
          *         cadence: Cadence.
+         *         temperature: Ambient temperature in degrees Celsius.
+         *         skin_temperature: Skin temperature in degrees Celsius.
          */
         LivePointIn: {
             /** Cadence */
@@ -9083,8 +9085,12 @@ export interface components {
              * Format: date-time
              */
             recorded_at: string;
+            /** Skin Temperature */
+            skin_temperature?: number | null;
             /** Speed */
             speed?: number | null;
+            /** Temperature */
+            temperature?: number | null;
         };
         /**
          * LivePointRead
@@ -9106,8 +9112,12 @@ export interface components {
              * Format: date-time
              */
             recorded_at: string;
+            /** Skin Temperature */
+            skin_temperature?: number | null;
             /** Speed */
             speed?: number | null;
+            /** Temperature */
+            temperature?: number | null;
         };
         /**
          * LivePointsPush

@@ -13,7 +13,9 @@ _HEADER = (
 
 
 def _extensions(point: live_tracking_schema.LivePointRead) -> str:
-    """Return the heart-rate / cadence extension block for a point.
+    """Return the heart-rate / cadence / temperature extension block for a point.
+
+    Skin temperature has no GPX equivalent, so it is only shown live.
 
     Args:
         point: The point to render.
@@ -24,6 +26,8 @@ def _extensions(point: live_tracking_schema.LivePointRead) -> str:
     parts = []
     if point.heart_rate is not None:
         parts.append(f"<gpxtpx:hr>{point.heart_rate}</gpxtpx:hr>")
+    if point.temperature is not None:
+        parts.append(f"<gpxtpx:atemp>{point.temperature}</gpxtpx:atemp>")
     if point.cadence is not None:
         parts.append(f"<gpxtpx:cad>{point.cadence}</gpxtpx:cad>")
     if not parts:

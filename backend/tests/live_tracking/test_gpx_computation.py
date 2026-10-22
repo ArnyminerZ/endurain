@@ -25,6 +25,11 @@ class TestBuildGpx:
         assert "<gpxtpx:cad>80</gpxtpx:cad>" in xml
         assert "<name>" not in xml
 
+    def test_temperature_is_written_but_skin_temperature_is_not(self):
+        xml = gpx_computation.build_gpx([_read(39.1, -0.5, 0, temperature=18.5, skin_temperature=33.1)], None, "Run")
+        assert "<gpxtpx:atemp>18.5</gpxtpx:atemp>" in xml
+        assert "33.1" not in xml
+
     def test_user_text_is_escaped(self):
         xml = gpx_computation.build_gpx([_read(1, 1, 0)], "A & <B>", "Run")
         assert "A &amp; &lt;B&gt;" in xml

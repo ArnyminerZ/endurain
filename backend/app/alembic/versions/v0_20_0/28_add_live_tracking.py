@@ -91,6 +91,8 @@ def upgrade() -> None:
         sa.Column("speed", sa.Float(), nullable=True, comment="Speed in meters per second"),
         sa.Column("heart_rate", sa.SmallInteger(), nullable=True, comment="Heart rate in bpm"),
         sa.Column("cadence", sa.SmallInteger(), nullable=True, comment="Cadence"),
+        sa.Column("temperature", sa.Float(), nullable=True, comment="Ambient temperature in degrees Celsius"),
+        sa.Column("skin_temperature", sa.Float(), nullable=True, comment="Skin temperature in degrees Celsius"),
         sa.ForeignKeyConstraint(["session_id"], ["live_sessions.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("session_id", "recorded_at", name="uq_live_points_session_recorded_at"),
