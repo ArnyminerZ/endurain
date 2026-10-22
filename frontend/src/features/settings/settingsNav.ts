@@ -1,4 +1,5 @@
 import {
+  BellRing,
   FolderInput,
   KeyRound,
   Plug,
@@ -48,6 +49,12 @@ export const SETTINGS_ZONES: readonly SettingsZone[] = [
     name: 'settings-integrations',
     labelKey: 'settings.nav.integrations',
     icon: Plug,
+    adminOnly: false,
+  },
+  {
+    name: 'settings-live-contacts',
+    labelKey: 'settings.nav.liveContacts',
+    icon: BellRing,
     adminOnly: false,
   },
   {

@@ -12,7 +12,8 @@
     "import": "Importa",
     "users": "Usuaris",
     "idp": "Proveïdors d'identitat",
-    "server": "Configuració del servidor"
+    "server": "Configuració del servidor",
+    "liveContacts": "Avisos del seguiment en directe"
   },
   "users": {
     "title": "Usuaris",
@@ -925,6 +926,51 @@
       "exportError": "No s'han pogut exportar les teves dades. Torna-ho a intentar.",
       "importSuccess": "Dades importades",
       "importError": "No s'ha pogut importar l'arxiu. Comprova el fitxer i torna-ho a intentar."
+    }
+  },
+  "liveContacts": {
+    "title": "Avisar persones del seguiment en directe",
+    "subtitle": "Aquestes persones reben un correu amb l'enllaç cada vegada que comences un seguiment en directe.",
+    "buttonAdd": "Afegir persona",
+    "count": "S'avisarà {count} persona(es):",
+    "empty": {
+      "title": "Encara no hi ha ningú a qui avisar",
+      "description": "Afig les persones que han de rebre per correu l'enllaç del teu seguiment en directe."
+    },
+    "error": {
+      "title": "No s'ha pogut carregar la llista",
+      "description": "Comprova la connexió i torna-ho a provar.",
+      "retry": "Reintentar"
+    },
+    "list": {
+      "delete": "Llevar {name}"
+    },
+    "form": {
+      "addTitle": "Afegir persona",
+      "description": "Rebrà per correu l'enllaç en directe cada vegada que comences un seguiment.",
+      "name": "Nom",
+      "email": "Correu electrònic",
+      "create": "Afegir persona",
+      "cancel": "Cancel·lar",
+      "close": "Tancar",
+      "nameRequired": "Introdueix un nom",
+      "nameTooLong": "El nom és massa llarg",
+      "emailRequired": "Introdueix un correu electrònic",
+      "emailInvalid": "Introdueix un correu electrònic vàlid",
+      "emailTooLong": "El correu electrònic és massa llarg",
+      "createSuccess": "Persona afegida",
+      "saveError": "No s'ha pogut afegir la persona. Torna-ho a provar.",
+      "duplicate": "Aquest correu electrònic ja és a la llista.",
+      "limitReached": "La llista està plena. Lleva algú abans d'afegir-ne més."
+    },
+    "delete": {
+      "title": "Llevar aquesta persona?",
+      "body": "Deixarà de rebre un correu quan comences un seguiment en directe.",
+      "confirm": "Llevar",
+      "cancel": "Cancel·lar",
+      "close": "Tancar",
+      "success": "Persona llevada",
+      "error": "No s'ha pogut llevar la persona. Torna-ho a provar."
     }
   }
 }

@@ -12,7 +12,8 @@
     "import": "Import",
     "users": "Users",
     "idp": "Identity providers",
-    "server": "Server settings"
+    "server": "Server settings",
+    "liveContacts": "Live track notifications"
   },
   "users": {
     "title": "Users",
@@ -925,6 +926,51 @@
       "exportError": "Couldn't export your data. Please try again.",
       "importSuccess": "Data imported",
       "importError": "Couldn't import the archive. Please check the file and try again."
+    }
+  },
+  "liveContacts": {
+    "title": "Notify people on live track",
+    "subtitle": "These people get an email with the link whenever you start a live track.",
+    "buttonAdd": "Add person",
+    "count": "{count} person(s) will be notified:",
+    "empty": {
+      "title": "Nobody to notify yet",
+      "description": "Add the people who should receive your live track link by email."
+    },
+    "error": {
+      "title": "Couldn't load the list",
+      "description": "Check your connection and try again.",
+      "retry": "Try again"
+    },
+    "list": {
+      "delete": "Remove {name}"
+    },
+    "form": {
+      "addTitle": "Add person",
+      "description": "They will be emailed the live link every time you start a live track.",
+      "name": "Name",
+      "email": "Email",
+      "create": "Add person",
+      "cancel": "Cancel",
+      "close": "Close",
+      "nameRequired": "Enter a name",
+      "nameTooLong": "The name is too long",
+      "emailRequired": "Enter an email address",
+      "emailInvalid": "Enter a valid email address",
+      "emailTooLong": "The email address is too long",
+      "createSuccess": "Person added",
+      "saveError": "Couldn't add the person. Try again.",
+      "duplicate": "That email address is already on the list.",
+      "limitReached": "The list is full. Remove someone before adding more."
+    },
+    "delete": {
+      "title": "Remove this person?",
+      "body": "They will no longer be emailed when you start a live track.",
+      "confirm": "Remove",
+      "cancel": "Cancel",
+      "close": "Close",
+      "success": "Person removed",
+      "error": "Couldn't remove the person. Try again."
     }
   }
 }

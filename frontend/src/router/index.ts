@@ -207,6 +207,11 @@ const router = createRouter({
           component: () => import('@/features/integrations/views/IntegrationsSettingsView.vue'),
         },
         {
+          path: 'live-contacts',
+          name: 'settings-live-contacts',
+          component: () => import('@/features/live/views/LiveContactsSettingsView.vue'),
+        },
+        {
           path: 'import',
           name: 'settings-import',
           component: () => import('@/features/import/views/ImportSettingsView.vue'),
