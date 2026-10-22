@@ -22,7 +22,8 @@
     "skinTemperature": "Temperatura de la pell",
     "gadgetBattery": "Bateria del dispositiu",
     "phoneBattery": "Bateria del mòbil",
-    "phoneSignal": "Senyal del mòbil"
+    "phoneSignal": "Senyal del mòbil",
+    "position": "Posició"
   },
   "ended": {
     "title": "Aquest seguiment en directe ha acabat",
@@ -32,7 +33,6 @@
     "title": "No s'ha pogut carregar el seguiment",
     "message": "Comprova la connexió i torna-ho a provar."
   },
-  "signalValue": "{level}/4",
   "devices": {
     "gadget": "Dispositiu",
     "phone": "Mòbil"
@@ -41,6 +41,32 @@
     "batteryLow": "Bateria baixa ({device}): {percent}%",
     "batteryCritical": "Bateria molt baixa ({device}): {percent}%",
     "weakSignal": "Senyal del mòbil feble",
-    "noSignal": "Sense senyal al mòbil"
+    "noSignal": "Sense senyal al mòbil",
+    "poorGps": "La posició pot ser imprecisa"
+  },
+  "signal": {
+    "label": "{level} de 4 barres",
+    "level": {
+      "0": "Sense senyal",
+      "1": "Feble",
+      "2": "Regular",
+      "3": "Bona",
+      "4": "Excel·lent"
+    }
+  },
+  "position": {
+    "gps": "GPS",
+    "source": {
+      "gadget": "GPS del dispositiu",
+      "phone": "GPS del telèfon"
+    },
+    "quality": {
+      "good": "Precisa",
+      "fair": "Aproximada",
+      "poor": "Imprecisa"
+    },
+    "qualityLabel": "Precisió del GPS: {quality}",
+    "accuracy": "±{meters} m",
+    "satellites": "{count} satèl·lits"
   }
 }

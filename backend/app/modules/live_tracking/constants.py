@@ -16,6 +16,46 @@ class SessionStatus(StrEnum):
     ENDED = "ended"
 
 
+class PositionSource(StrEnum):
+    """Where the position of a point was measured.
+
+    Attributes:
+        GADGET: The recording gadget's own GPS (e.g. the watch).
+        PHONE: The phone's GPS, used when the gadget has no fix or none to give.
+    """
+
+    GADGET = "gadget"
+    PHONE = "phone"
+
+
+class SignalType(StrEnum):
+    """The kind of mobile signal measurement a ``phone_signal_dbm`` value is.
+
+    The same dBm number means different things for each: the thresholds that
+    separate a good signal from a bad one differ, so viewers need to know which
+    one they are looking at.
+
+    Attributes:
+        RSRP: LTE or 5G reference signal received power (the usual one on modern phones).
+        RSSI: Received signal strength indicator (GSM, or the LTE total).
+        RSCP: UMTS (3G) received signal code power.
+    """
+
+    RSRP = "rsrp"
+    RSSI = "rssi"
+    RSCP = "rscp"
+
+
+#: Valid range of a mobile signal reading in dBm.
+MIN_SIGNAL_DBM = -150
+MAX_SIGNAL_DBM = 0
+
+#: Largest horizontal accuracy radius accepted, in meters.
+MAX_HORIZONTAL_ACCURACY_M = 100_000
+
+#: Most satellites a single fix can report (all constellations together).
+MAX_SATELLITES = 100
+
 #: Most points accepted by one push request.
 MAX_POINTS_PER_PUSH = 200
 

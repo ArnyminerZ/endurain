@@ -18,6 +18,7 @@ import {
   speedUnitLabel,
   temperatureToDisplay,
 } from '@/features/activities/utils/format'
+import SignalBars from '@/features/live/components/SignalBars.vue'
 import { useLiveSession } from '@/features/live/composables/useLiveSession'
 import {
   batterySeverity,
@@ -25,6 +26,9 @@ import {
   lastKnown,
   secondsSince,
   signalSeverity,
+  gpsQuality,
+  GPS_QUALITY_BARS,
+  lastKnownSignalBars,
   staleThresholdSeconds,
   toGeoPoints,
   type StatusSeverity,
@@ -110,7 +114,25 @@ const cadence = computed(() => latest.value?.cadence ?? null)
 // Battery and signal are sent now and then, so show the last value ever reported.
 const gadgetBattery = computed(() => lastKnown(points.value, 'gadget_battery'))
 const phoneBattery = computed(() => lastKnown(points.value, 'phone_battery'))
-const phoneSignal = computed(() => lastKnown(points.value, 'phone_signal'))
+// The signal is shown as bars (0-4), however the client measured it.
+const phoneSignal = computed(() => lastKnownSignalBars(points.value))
+
+// Where the newest position came from, and how much to trust it.
+const positionSource = computed(() => latest.value?.position_source ?? null)
+const quality = computed(() => gpsQuality(latest.value))
+const accuracy = computed(() => latest.value?.horizontal_accuracy ?? null)
+const satellites = computed(() => latest.value?.satellites ?? null)
+const positionDetail = computed(() => {
+  const parts: string[] = []
+  if (accuracy.value !== null) {
+    parts.push(t('live.position.accuracy', { meters: Math.round(accuracy.value) }))
+  }
+  if (satellites.value !== null) {
+    parts.push(t('live.position.satellites', { count: satellites.value }))
+  }
+  return parts.join(' · ')
+})
+const qualityAccent = computed(() => (quality.value === 'poor' ? 'effort' : 'ink'))
 
 /** Maps a reading's severity onto a metric accent colour. */
 const ACCENT: Record<StatusSeverity, 'ink' | 'effort' | 'hr'> = {
@@ -156,6 +178,9 @@ const deviceAlerts = computed<DeviceAlert[]>(() => {
         critical: severity === 'critical',
       })
     }
+  }
+  if (quality.value === 'poor') {
+    alerts.push({ key: 'gps-quality', text: t('live.alerts.poorGps'), critical: false })
   }
   if (phoneSignal.value !== null) {
     const severity = signalSeverity(phoneSignal.value)
@@ -269,11 +294,41 @@ const deviceAlerts = computed<DeviceAlert[]>(() => {
           :accent="phoneBatteryAccent"
         />
         <MetricPill
+          v-if="positionSource !== null || quality !== null"
+          :label="t('live.metrics.position')"
+          :value="
+            positionSource ? t(`live.position.source.${positionSource}`) : t('live.position.gps')
+          "
+          :accent="qualityAccent"
+        >
+          <span v-if="quality !== null" class="mt-1 flex items-center gap-2">
+            <SignalBars
+              :level="GPS_QUALITY_BARS[quality]"
+              :max="3"
+              :tone="quality === 'poor' ? 'effort' : 'ink'"
+              :label="
+                t('live.position.qualityLabel', { quality: t(`live.position.quality.${quality}`) })
+              "
+            />
+            <span class="text-hint">{{ t(`live.position.quality.${quality}`) }}</span>
+          </span>
+          <p v-if="positionDetail" class="text-hint">{{ positionDetail }}</p>
+        </MetricPill>
+        <MetricPill
           v-if="phoneSignal !== null"
           :label="t('live.metrics.phoneSignal')"
-          :value="t('live.signalValue', { level: phoneSignal })"
+          :value="t(`live.signal.level.${phoneSignal}`)"
           :accent="phoneSignalAccent"
-        />
+        >
+          <SignalBars
+            class="mt-1"
+            :level="phoneSignal"
+            :tone="
+              phoneSignalAccent === 'hr' ? 'hr' : phoneSignalAccent === 'effort' ? 'effort' : 'ink'
+            "
+            :label="t('live.signal.label', { level: phoneSignal })"
+          />
+        </MetricPill>
         <MetricPill
           v-if="skin !== null"
           :label="t('live.metrics.skinTemperature')"

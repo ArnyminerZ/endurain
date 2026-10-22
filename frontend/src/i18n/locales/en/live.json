@@ -22,7 +22,8 @@
     "skinTemperature": "Skin temperature",
     "gadgetBattery": "Gadget battery",
     "phoneBattery": "Phone battery",
-    "phoneSignal": "Phone signal"
+    "phoneSignal": "Phone signal",
+    "position": "Position"
   },
   "ended": {
     "title": "This live tracking has ended",
@@ -32,7 +33,6 @@
     "title": "Couldn't load live tracking",
     "message": "Check your connection and try again."
   },
-  "signalValue": "{level}/4",
   "devices": {
     "gadget": "Gadget",
     "phone": "Phone"
@@ -41,6 +41,32 @@
     "batteryLow": "{device} battery low: {percent}%",
     "batteryCritical": "{device} battery critically low: {percent}%",
     "weakSignal": "Weak phone signal",
-    "noSignal": "No phone signal"
+    "noSignal": "No phone signal",
+    "poorGps": "The position may be inaccurate"
+  },
+  "signal": {
+    "label": "{level} of 4 bars",
+    "level": {
+      "0": "No signal",
+      "1": "Weak",
+      "2": "Fair",
+      "3": "Good",
+      "4": "Great"
+    }
+  },
+  "position": {
+    "gps": "GPS",
+    "source": {
+      "gadget": "Gadget GPS",
+      "phone": "Phone GPS"
+    },
+    "quality": {
+      "good": "Precise",
+      "fair": "Approximate",
+      "poor": "Rough"
+    },
+    "qualityLabel": "GPS accuracy: {quality}",
+    "accuracy": "±{meters} m",
+    "satellites": "{count} satellites"
   }
 }

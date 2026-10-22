@@ -155,3 +155,114 @@ export function signalSeverity(level: number): StatusSeverity {
   }
   return level <= WEAK_SIGNAL_LEVEL ? 'low' : 'ok'
 }
+
+/** Which measurement a phone signal reading in dBm is. */
+export type SignalType = NonNullable<LivePoint['phone_signal_type']>
+
+/** Number of bars a signal indicator has. */
+export const MAX_SIGNAL_BARS = 4
+
+/**
+ * Lowest dBm that earns 4, 3, 2 and 1 bars for each kind of reading. They mirror the
+ * defaults Android uses for its own signal icon, so the bars match what the phone shows.
+ */
+const SIGNAL_BAR_THRESHOLDS: Record<SignalType, readonly [number, number, number, number]> = {
+  rsrp: [-98, -108, -118, -128],
+  rssi: [-78, -86, -97, -110],
+  rscp: [-85, -95, -105, -115],
+}
+
+/**
+ * Turns a mobile signal reading into bars, the way a phone's status bar does.
+ *
+ * @param dbm - Signal power in dBm (e.g. -97).
+ * @param type - The kind of measurement `dbm` is.
+ * @returns 0 (no usable signal) to 4 (great) bars.
+ */
+export function signalBars(dbm: number, type: SignalType): number {
+  const thresholds = SIGNAL_BAR_THRESHOLDS[type]
+  const reached = thresholds.findIndex((minimum) => dbm >= minimum)
+  return reached === -1 ? 0 : MAX_SIGNAL_BARS - reached
+}
+
+/**
+ * The signal bars a single point reports. A reading in dBm wins; clients that only
+ * send the old 0-4 level are still understood.
+ *
+ * @param point - The point to read.
+ * @returns 0-4 bars, or `null` when the point carries no signal reading.
+ */
+export function pointSignalBars(point: LivePoint | null | undefined): number | null {
+  if (!point) {
+    return null
+  }
+  if (
+    point.phone_signal_dbm !== null &&
+    point.phone_signal_dbm !== undefined &&
+    point.phone_signal_type
+  ) {
+    return signalBars(point.phone_signal_dbm, point.phone_signal_type)
+  }
+  if (point.phone_signal !== null && point.phone_signal !== undefined) {
+    return Math.min(Math.max(point.phone_signal, 0), MAX_SIGNAL_BARS)
+  }
+  return null
+}
+
+/**
+ * Finds the signal bars of the most recent point that reported a signal. Clients send
+ * the signal only now and then, so the newest point usually lacks it.
+ *
+ * @param points - The accumulated track, oldest first.
+ * @returns 0-4 bars, or `null` when no point ever reported a signal.
+ */
+export function lastKnownSignalBars(points: readonly LivePoint[]): number | null {
+  for (let index = points.length - 1; index >= 0; index -= 1) {
+    const bars = pointSignalBars(points[index])
+    if (bars !== null) {
+      return bars
+    }
+  }
+  return null
+}
+
+/** How trustworthy a position is, in words a non-technical viewer understands. */
+export type GpsQuality = 'good' | 'fair' | 'poor'
+
+/** Horizontal accuracy (meters) up to which a position is good / fair. */
+export const GOOD_ACCURACY_METERS = 10
+export const FAIR_ACCURACY_METERS = 30
+/** Satellite count from which a fix is good / fair, when no accuracy is reported. */
+export const GOOD_SATELLITES = 8
+export const FAIR_SATELLITES = 5
+
+/**
+ * Rates the quality of a position. The accuracy radius says it directly; the number of
+ * satellites is a rougher guide used only when the client sends no accuracy.
+ *
+ * @param point - The point to rate.
+ * @returns `good`, `fair` or `poor`, or `null` when the point reports neither measure.
+ */
+export function gpsQuality(point: LivePoint | null | undefined): GpsQuality | null {
+  if (!point) {
+    return null
+  }
+  const accuracy = point.horizontal_accuracy
+  if (accuracy !== null && accuracy !== undefined) {
+    if (accuracy <= GOOD_ACCURACY_METERS) {
+      return 'good'
+    }
+    return accuracy <= FAIR_ACCURACY_METERS ? 'fair' : 'poor'
+  }
+  const satellites = point.satellites
+  if (satellites !== null && satellites !== undefined) {
+    if (satellites >= GOOD_SATELLITES) {
+      return 'good'
+    }
+    return satellites >= FAIR_SATELLITES ? 'fair' : 'poor'
+  }
+  return null
+}
+
+/** The bars (out of 3) that represent a {@link GpsQuality}. */
+export const GPS_QUALITY_BARS: Record<GpsQuality, number> = { poor: 1, fair: 2, good: 3 }

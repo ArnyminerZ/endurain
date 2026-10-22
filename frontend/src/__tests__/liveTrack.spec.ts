@@ -5,10 +5,14 @@ import type { LivePoint } from '@/features/live/types'
 import {
   batterySeverity,
   coarseDuration,
+  gpsQuality,
   lastKnown,
+  lastKnownSignalBars,
   mergePoints,
   newestTimestamp,
+  pointSignalBars,
   secondsSince,
+  signalBars,
   signalSeverity,
   staleThresholdSeconds,
   toGeoPoints,
@@ -125,5 +129,79 @@ describe('coarseDuration', () => {
     expect(coarseDuration(5)).toEqual({ unit: 'seconds', value: 5 })
     expect(coarseDuration(125)).toEqual({ unit: 'minutes', value: 2 })
     expect(coarseDuration(7300)).toEqual({ unit: 'hours', value: 2 })
+  })
+})
+
+describe('signalBars', () => {
+  it('rates LTE/5G readings like the phone does', () => {
+    expect(signalBars(-85, 'rsrp')).toBe(4)
+    expect(signalBars(-98, 'rsrp')).toBe(4)
+    expect(signalBars(-100, 'rsrp')).toBe(3)
+    expect(signalBars(-110, 'rsrp')).toBe(2)
+    expect(signalBars(-120, 'rsrp')).toBe(1)
+    expect(signalBars(-130, 'rsrp')).toBe(0)
+  })
+
+  it('uses a different scale for each kind of reading', () => {
+    // The same -90 dBm earns a different number of bars for each kind of reading.
+    expect(signalBars(-90, 'rscp')).toBe(3)
+    expect(signalBars(-90, 'rsrp')).toBe(4)
+    expect(signalBars(-90, 'rssi')).toBe(2)
+  })
+})
+
+describe('pointSignalBars', () => {
+  it('prefers the reading in dBm', () => {
+    const p = point(0, { phone_signal: 1, phone_signal_dbm: -95, phone_signal_type: 'rsrp' })
+    expect(pointSignalBars(p)).toBe(4)
+  })
+
+  it('still understands the old 0-4 level', () => {
+    expect(pointSignalBars(point(0, { phone_signal: 2 }))).toBe(2)
+    expect(pointSignalBars(point(0, { phone_signal: 0 }))).toBe(0)
+  })
+
+  it('is null when the point has no signal, or there is no point', () => {
+    expect(pointSignalBars(point(0))).toBeNull()
+    expect(pointSignalBars(undefined)).toBeNull()
+  })
+})
+
+describe('lastKnownSignalBars', () => {
+  it('looks back to the last point that reported a signal', () => {
+    const points = [
+      point(0, { phone_signal_dbm: -110, phone_signal_type: 'rsrp' }),
+      point(10),
+      point(20),
+    ]
+    expect(lastKnownSignalBars(points)).toBe(2)
+  })
+
+  it('is null when nothing was ever reported', () => {
+    expect(lastKnownSignalBars([point(0), point(10)])).toBeNull()
+  })
+})
+
+describe('gpsQuality', () => {
+  it('rates by the accuracy radius when there is one', () => {
+    expect(gpsQuality(point(0, { horizontal_accuracy: 4 }))).toBe('good')
+    expect(gpsQuality(point(0, { horizontal_accuracy: 10 }))).toBe('good')
+    expect(gpsQuality(point(0, { horizontal_accuracy: 25 }))).toBe('fair')
+    expect(gpsQuality(point(0, { horizontal_accuracy: 80 }))).toBe('poor')
+  })
+
+  it('falls back to the satellite count', () => {
+    expect(gpsQuality(point(0, { satellites: 12 }))).toBe('good')
+    expect(gpsQuality(point(0, { satellites: 6 }))).toBe('fair')
+    expect(gpsQuality(point(0, { satellites: 3 }))).toBe('poor')
+  })
+
+  it('trusts the accuracy over the satellite count', () => {
+    expect(gpsQuality(point(0, { horizontal_accuracy: 60, satellites: 14 }))).toBe('poor')
+  })
+
+  it('is null without any measure', () => {
+    expect(gpsQuality(point(0))).toBeNull()
+    expect(gpsQuality(undefined)).toBeNull()
   })
 })

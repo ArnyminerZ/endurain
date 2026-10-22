@@ -130,6 +130,58 @@ class TestLifecycle:
         latest = client.get(f"/public/live/{token}").json()["latest"]
         assert (latest["gadget_battery"], latest["phone_battery"], latest["phone_signal"]) == (62, 18, 1)
 
+    def test_stores_position_source_gps_quality_and_signal_strength(self, client, now):
+        started = _start(client)
+        token = started["share_url"].rsplit("/live/", 1)[1]
+        point = {
+            "recorded_at": (now - timedelta(seconds=5)).isoformat(),
+            "latitude": 39.0,
+            "longitude": -0.5,
+            "position_source": "gadget",
+            "satellites": 11,
+            "horizontal_accuracy": 4.5,
+            "phone_signal_dbm": -97,
+            "phone_signal_type": "rsrp",
+        }
+        assert (
+            client.post(f"/live/sessions/{started['session']['id']}/points", json={"points": [point]}).status_code
+            == 200
+        )
+        latest = client.get(f"/public/live/{token}").json()["latest"]
+        assert latest["position_source"] == "gadget"
+        assert (latest["satellites"], latest["horizontal_accuracy"]) == (11, 4.5)
+        assert (latest["phone_signal_dbm"], latest["phone_signal_type"]) == (-97, "rsrp")
+
+    def test_quality_fields_are_optional(self, client, now):
+        started = _start(client)
+        token = started["share_url"].rsplit("/live/", 1)[1]
+        point = {"recorded_at": (now - timedelta(seconds=5)).isoformat(), "latitude": 39.0, "longitude": -0.5}
+        client.post(f"/live/sessions/{started['session']['id']}/points", json={"points": [point]})
+        latest = client.get(f"/public/live/{token}").json()["latest"]
+        assert latest["position_source"] is None
+        assert latest["satellites"] is None
+        assert latest["phone_signal_dbm"] is None
+
+    @pytest.mark.parametrize(
+        "extra",
+        [
+            {"position_source": "satellite"},
+            {"satellites": -1},
+            {"satellites": 101},
+            {"horizontal_accuracy": -0.1},
+            {"phone_signal_dbm": 5, "phone_signal_type": "rsrp"},
+            {"phone_signal_dbm": -151, "phone_signal_type": "rsrp"},
+            {"phone_signal_dbm": -90, "phone_signal_type": "bars"},
+            {"phone_signal_dbm": -90},
+            {"phone_signal_type": "rsrp"},
+        ],
+    )
+    def test_rejects_invalid_quality_fields(self, client, now, extra):
+        started = _start(client)
+        point = {"recorded_at": now.isoformat(), "latitude": 1, "longitude": 1, **extra}
+        response = client.post(f"/live/sessions/{started['session']['id']}/points", json={"points": [point]})
+        assert response.status_code == 422
+
     @pytest.mark.parametrize(
         "extra",
         [{"gadget_battery": 101}, {"phone_battery": -1}, {"phone_signal": 5}, {"phone_signal": -1}],

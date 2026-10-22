@@ -22,7 +22,8 @@
     "skinTemperature": "Temperatura de la piel",
     "gadgetBattery": "Batería del dispositivo",
     "phoneBattery": "Batería del móvil",
-    "phoneSignal": "Señal del móvil"
+    "phoneSignal": "Señal del móvil",
+    "position": "Posición"
   },
   "ended": {
     "title": "Este seguimiento en directo ha terminado",
@@ -32,7 +33,6 @@
     "title": "No se pudo cargar el seguimiento",
     "message": "Comprueba tu conexión e inténtalo de nuevo."
   },
-  "signalValue": "{level}/4",
   "devices": {
     "gadget": "Dispositivo",
     "phone": "Móvil"
@@ -41,6 +41,32 @@
     "batteryLow": "Batería baja ({device}): {percent}%",
     "batteryCritical": "Batería muy baja ({device}): {percent}%",
     "weakSignal": "Señal del móvil débil",
-    "noSignal": "Sin señal en el móvil"
+    "noSignal": "Sin señal en el móvil",
+    "poorGps": "La posición puede ser imprecisa"
+  },
+  "signal": {
+    "label": "{level} de 4 barras",
+    "level": {
+      "0": "Sin señal",
+      "1": "Débil",
+      "2": "Regular",
+      "3": "Buena",
+      "4": "Excelente"
+    }
+  },
+  "position": {
+    "gps": "GPS",
+    "source": {
+      "gadget": "GPS del dispositivo",
+      "phone": "GPS del teléfono"
+    },
+    "quality": {
+      "good": "Precisa",
+      "fair": "Aproximada",
+      "poor": "Imprecisa"
+    },
+    "qualityLabel": "Precisión del GPS: {quality}",
+    "accuracy": "±{meters} m",
+    "satellites": "{count} satélites"
   }
 }

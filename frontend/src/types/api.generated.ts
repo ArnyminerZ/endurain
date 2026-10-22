@@ -9069,7 +9069,15 @@ export interface components {
          *         skin_temperature: Skin temperature in degrees Celsius.
          *         gadget_battery: Battery of the recording gadget (e.g. the watch), in percent.
          *         phone_battery: Battery of the phone relaying the data, in percent.
-         *         phone_signal: Phone mobile signal level, 0 (none) to 4 (great).
+         *         phone_signal: Deprecated coarse phone signal level, 0 (none) to 4 (great). Send
+         *             ``phone_signal_dbm`` and ``phone_signal_type`` instead.
+         *         phone_signal_dbm: Phone mobile signal power in dBm (e.g. -95).
+         *         phone_signal_type: Which measurement ``phone_signal_dbm`` is: ``rsrp`` (LTE/5G),
+         *             ``rssi`` or ``rscp`` (3G). Required with ``phone_signal_dbm``.
+         *         position_source: Where the position was measured: ``gadget`` (the watch's GPS) or
+         *             ``phone``.
+         *         satellites: Satellites used for the fix, when known.
+         *         horizontal_accuracy: Estimated horizontal accuracy of the fix, in meters.
          */
         LivePointIn: {
             /** Cadence */
@@ -9080,6 +9088,8 @@ export interface components {
             gadget_battery?: number | null;
             /** Heart Rate */
             heart_rate?: number | null;
+            /** Horizontal Accuracy */
+            horizontal_accuracy?: number | null;
             /** Latitude */
             latitude: number;
             /** Longitude */
@@ -9088,11 +9098,17 @@ export interface components {
             phone_battery?: number | null;
             /** Phone Signal */
             phone_signal?: number | null;
+            /** Phone Signal Dbm */
+            phone_signal_dbm?: number | null;
+            phone_signal_type?: components["schemas"]["SignalType"] | null;
+            position_source?: components["schemas"]["PositionSource"] | null;
             /**
              * Recorded At
              * Format: date-time
              */
             recorded_at: string;
+            /** Satellites */
+            satellites?: number | null;
             /** Skin Temperature */
             skin_temperature?: number | null;
             /** Speed */
@@ -9113,6 +9129,8 @@ export interface components {
             gadget_battery?: number | null;
             /** Heart Rate */
             heart_rate?: number | null;
+            /** Horizontal Accuracy */
+            horizontal_accuracy?: number | null;
             /** Latitude */
             latitude: number;
             /** Longitude */
@@ -9121,11 +9139,17 @@ export interface components {
             phone_battery?: number | null;
             /** Phone Signal */
             phone_signal?: number | null;
+            /** Phone Signal Dbm */
+            phone_signal_dbm?: number | null;
+            phone_signal_type?: components["schemas"]["SignalType"] | null;
+            position_source?: components["schemas"]["PositionSource"] | null;
             /**
              * Recorded At
              * Format: date-time
              */
             recorded_at: string;
+            /** Satellites */
+            satellites?: number | null;
             /** Skin Temperature */
             skin_temperature?: number | null;
             /** Speed */
@@ -9768,6 +9792,16 @@ export interface components {
          */
         PasswordType: "strict" | "length_only";
         /**
+         * PositionSource
+         * @description Where the position of a point was measured.
+         *
+         *     Attributes:
+         *         GADGET: The recording gadget's own GPS (e.g. the watch).
+         *         PHONE: The phone's GPS, used when the gadget has no fix or none to give.
+         * @enum {string}
+         */
+        PositionSource: "gadget" | "phone";
+        /**
          * ProblemDetail
          * @description An RFC 9457 problem document, as returned for every API error.
          *
@@ -10324,6 +10358,21 @@ export interface components {
              */
             message: string;
         };
+        /**
+         * SignalType
+         * @description The kind of mobile signal measurement a ``phone_signal_dbm`` value is.
+         *
+         *     The same dBm number means different things for each: the thresholds that
+         *     separate a good signal from a bad one differ, so viewers need to know which
+         *     one they are looking at.
+         *
+         *     Attributes:
+         *         RSRP: LTE or 5G reference signal received power (the usual one on modern phones).
+         *         RSSI: Received signal strength indicator (GSM, or the LTE total).
+         *         RSCP: UMTS (3G) received signal code power.
+         * @enum {string}
+         */
+        SignalType: "rsrp" | "rssi" | "rscp";
         /**
          * SleepScore
          * @description Enumeration of sleep quality score levels.
