@@ -460,6 +460,14 @@ export const queryKeys = {
     results: () => ['goals', 'results'] as const,
   },
 
+  /** The people emailed when the user starts a live track (settings zone). */
+  liveContacts: {
+    /** Broad prefix; invalidating this cascades to every live-contacts query. */
+    all: () => ['live-contacts'] as const,
+    /** The authenticated user's contact list. */
+    list: () => ['live-contacts', 'list'] as const,
+  },
+
   /**
    * Core application metadata fetched from the backend and external sources.
    */

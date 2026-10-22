@@ -12,7 +12,8 @@
     "import": "Importar",
     "users": "Usuarios",
     "idp": "Proveedores de identidad",
-    "server": "Ajustes del servidor"
+    "server": "Ajustes del servidor",
+    "liveContacts": "Avisos del seguimiento en directo"
   },
   "users": {
     "title": "Usuarios",
@@ -925,6 +926,51 @@
       "exportError": "No se pudieron exportar tus datos. Inténtalo de nuevo.",
       "importSuccess": "Datos importados",
       "importError": "No se pudo importar el archivo. Comprueba el archivo e inténtalo de nuevo."
+    }
+  },
+  "liveContacts": {
+    "title": "Avisar a personas del seguimiento en directo",
+    "subtitle": "Estas personas reciben un correo con el enlace cada vez que empiezas un seguimiento en directo.",
+    "buttonAdd": "Añadir persona",
+    "count": "Se avisará a {count} persona(s):",
+    "empty": {
+      "title": "Todavía no hay nadie a quien avisar",
+      "description": "Añade a las personas que deben recibir por correo el enlace de tu seguimiento en directo."
+    },
+    "error": {
+      "title": "No se pudo cargar la lista",
+      "description": "Comprueba tu conexión e inténtalo de nuevo.",
+      "retry": "Reintentar"
+    },
+    "list": {
+      "delete": "Quitar a {name}"
+    },
+    "form": {
+      "addTitle": "Añadir persona",
+      "description": "Recibirá por correo el enlace en directo cada vez que empieces un seguimiento.",
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "create": "Añadir persona",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "nameRequired": "Introduce un nombre",
+      "nameTooLong": "El nombre es demasiado largo",
+      "emailRequired": "Introduce un correo electrónico",
+      "emailInvalid": "Introduce un correo electrónico válido",
+      "emailTooLong": "El correo electrónico es demasiado largo",
+      "createSuccess": "Persona añadida",
+      "saveError": "No se pudo añadir a la persona. Inténtalo de nuevo.",
+      "duplicate": "Ese correo electrónico ya está en la lista.",
+      "limitReached": "La lista está llena. Quita a alguien antes de añadir más."
+    },
+    "delete": {
+      "title": "¿Quitar a esta persona?",
+      "body": "Dejará de recibir un correo cuando empieces un seguimiento en directo.",
+      "confirm": "Quitar",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "success": "Persona quitada",
+      "error": "No se pudo quitar a la persona. Inténtalo de nuevo."
     }
   }
 }
