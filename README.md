@@ -37,6 +37,7 @@ Experience Endurain without installation:
 
 - [Endurain documentation](https://docs.endurain.com)
 - [What is Endurain?](#what-is-endurain)
+- [Features added by this fork](#features-added-by-this-fork)
 - [Endurain screenshots](https://docs.endurain.com/gallery/)
 - [Sponsors](#sponsors)
 - [Contributing](#contributing)
@@ -55,6 +56,24 @@ Endurain is a self-hosted fitness tracking service designed to give users full c
 To deploy Endurain, a Docker image is available, and a comprehensive example can be found in the "docker-compose.yml.example" file provided. Configuration is facilitated through environment variables, ensuring flexibility and ease of customization.
 
 For more information please see the Endurain's [documentation](https://docs.endurain.com).
+
+## Features added by this fork
+
+This fork ([ArnyminerZ/endurain](https://github.com/ArnyminerZ/endurain)) tracks upstream and adds the following on top. Anything not listed here is upstream Endurain.
+
+- **Live tracking:** share a link that follows a workout in real time while it is being recorded (`modules/live_tracking`, [reference](docs/reference/live-tracking.md)).
+  - Clients start a session, push position, heart rate, cadence and similar data in batches, and stop it; the share link stops working when the session ends.
+  - Anonymous viewer page at `/live/{token}`, with the track so far, the latest values and battery and signal warnings.
+  - Email notification of the link to a list of contacts, managed from a settings page.
+  - Position source (watch or phone), GPS quality and phone signal strength per point.
+- **Activity types:** rock climbing, bouldering, mountaineering, indoor climbing and dog walk.
+- **Gear:** climbing harness and climbing shoes gear types; any gear type can be assigned to an activity.
+- **Health data source:** Gadgetbridge is accepted as a source of health data.
+- **Translations:** Catalan strings for the climbing types and gear.
+- **Fixes:** completing a fasting session without a status no longer returns a 500.
+- **CI:** a daily workflow merges upstream into `master` and a workflow builds a personal Docker image.
+
+**Keeping this list current:** any change that adds a feature to this fork, or removes one, must update this section in the same pull request. Fixes that are also sent upstream do not need an entry once upstream has them.
 
 ## Sponsors
 

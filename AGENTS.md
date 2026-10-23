@@ -64,6 +64,7 @@ npm run gen:api      # after backend API changes
 - Local-only notes go in `devdocs/`, helper scripts in `devscripts/` (both gitignored).
 - All `UploadFile` handling goes through `backend/app/core/file_uploads.py`; never build filesystem paths from user filenames.
 - No hardcoded secrets; read configuration from environment variables.
+- This is a fork: when a change adds, changes or removes a fork-only feature (anything not in upstream Endurain), update the "Features added by this fork" section of `README.md` in the same change.
 - Ask for clarification when scope is unclear instead of assuming extra deliverables.
 
 ## Backend invariants
