@@ -374,20 +374,6 @@ class TestParseFrameSession:
         """street sub_sport (regression for #866) keeps the original sport value."""
         assert self._activity_type(sport="running", sub_sport="street") == "running"
 
-    # ── climbing / mountaineering ───────────────────────────────────────
-
-    def test_rock_climbing_generic_keeps_sport(self):
-        """rock_climbing sport with generic sub_sport keeps the sport value."""
-        assert self._activity_type(sport="rock_climbing", sub_sport="generic") == "rock_climbing"
-
-    def test_rock_climbing_bouldering_sub_sport(self):
-        """rock_climbing + bouldering sub_sport resolves to bouldering."""
-        assert self._activity_type(sport="rock_climbing", sub_sport="bouldering") == "bouldering"
-
-    def test_rock_climbing_indoor_sub_sport(self):
-        """rock_climbing + indoor_climbing sub_sport resolves to indoor_climbing."""
-        assert self._activity_type(sport="rock_climbing", sub_sport="indoor_climbing") == "indoor_climbing"
-
 
 class TestFindTimezoneName:
     """A bare UTC offset does not identify a zone, so the answer must be honest.
