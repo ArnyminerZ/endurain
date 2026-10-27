@@ -459,10 +459,7 @@ def complete_health_fasting(
 
     # Update the record
     db_health_fasting.fast_end_time = end_time
-    # status is a plain str when sent by the client (use_enum_values), but the
-    # default is still a FastingStatus member
-    status_value = getattr(complete_data.status, "value", complete_data.status)
-    db_health_fasting.status = status_value
+    db_health_fasting.status = getattr(complete_data.status, "value", complete_data.status)
     db_health_fasting.actual_duration_seconds = actual_duration
     if complete_data.notes:
         db_health_fasting.notes = complete_data.notes
