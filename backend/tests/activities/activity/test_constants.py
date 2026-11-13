@@ -9,6 +9,7 @@ from modules.activities.activity.constants import (
     ACTIVITY_NAME_TO_ID,
     ACTIVITY_TYPES_BY_SPORT,
     define_activity_type,
+    is_running_cadence_type,
     set_activity_name_based_on_activity_type,
 )
 
@@ -95,3 +96,13 @@ class TestForkActivityTypes:
 
     def test_dog_walk_counts_as_walk(self):
         assert 52 in ACTIVITY_TYPES_BY_SPORT["walk"]
+
+
+class TestIsRunningCadenceType:
+    def test_running_types(self):
+        for type_id in (1, 2, 3, 34, 40):
+            assert is_running_cadence_type(type_id) is True
+
+    def test_non_running_types(self):
+        for type_id in (4, 8, 11, 13, None):
+            assert is_running_cadence_type(type_id) is False
