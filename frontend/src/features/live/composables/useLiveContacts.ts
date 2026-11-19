@@ -53,7 +53,7 @@ export function useCreateLiveContactMutation() {
 export function useDeleteLiveContactMutation() {
   const client = useQueryClient()
 
-  return useMutation<void, Error, number>({
+  return useMutation<void, Error, string>({
     mutationKey: queryKeys.liveContacts.all(),
     mutationFn: (id) => deleteLiveContact(id),
     onSettled: () => {

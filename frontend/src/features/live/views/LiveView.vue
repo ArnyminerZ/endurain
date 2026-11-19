@@ -9,6 +9,8 @@ import { Card } from '@/components/ui/card'
 import { ErrorState } from '@/components/ui/error-state'
 import { LoadingState } from '@/components/ui/loading-state'
 import { MetricPill } from '@/components/ui/metric-pill'
+import type { ActivityType } from '@/features/activities/types'
+import { useUnitFormat } from '@/composables/useUnitFormat'
 import ActivityMap from '@/features/activities/components/ActivityMap.vue'
 import { useDisplayUnits } from '@/features/activities/composables/useActivityDetail'
 import {
@@ -35,11 +37,12 @@ import {
 } from '@/features/live/utils/liveTrack'
 
 /** A generic "workout" activity type: the live feed carries only a label, so speed and cadence use neutral units. */
-const GENERIC_ACTIVITY_TYPE = 10
+const GENERIC_ACTIVITY_TYPE: ActivityType = 'workout'
 
 const route = useRoute()
 const { t } = useI18n()
 const units = useDisplayUnits()
+const { unitLabel } = useUnitFormat()
 
 const token = String(route.params.token ?? '')
 const { status, session, points, latest, reconnecting, retry } = useLiveSession(token)
@@ -264,13 +267,13 @@ const deviceAlerts = computed<DeviceAlert[]>(() => {
           v-if="speed !== null"
           :label="t('live.metrics.speed')"
           :value="speed"
-          :unit="speedUnitLabel(GENERIC_ACTIVITY_TYPE, units)"
+          :unit="unitLabel(speedUnitLabel(GENERIC_ACTIVITY_TYPE, units))"
         />
         <MetricPill
           v-if="elevation !== null"
           :label="t('live.metrics.elevation')"
           :value="elevation.value"
-          :unit="elevation.unit"
+          :unit="elevation.unit ? unitLabel(elevation.unit) : undefined"
         />
         <MetricPill v-if="cadence !== null" :label="t('live.metrics.cadence')" :value="cadence" />
         <MetricPill

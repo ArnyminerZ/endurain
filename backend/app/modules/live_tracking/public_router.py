@@ -3,10 +3,9 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, Request, Response
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Path, Query, Request, Response
 
-import core.database as core_database
+import core.dependencies as core_dependencies
 import core.rate_limit as core_rate_limit
 import modules.live_tracking.schema as live_tracking_schema
 import modules.live_tracking.service as live_tracking_service
@@ -24,7 +23,7 @@ def read_public_live_session(
     request: Request,
     response: Response,
     token: Annotated[str, Path(min_length=1, max_length=100, description="Share token from the link")],
-    db: Annotated[Session, Depends(core_database.get_db)],
+    db: core_dependencies.DbSession,
     since: Annotated[datetime | None, Query(description="Only points recorded after this time")] = None,
 ) -> live_tracking_schema.PublicLiveView:
     """Return a live session by its share token.

@@ -14,7 +14,7 @@ def test_share_link_is_served_the_app_not_treated_as_a_static_file():
     app = FastAPI()
     app.include_router(core_router.router)
     core_exceptions.register_exception_handlers(app)
-    token = share_token.build_token(str(uuid.uuid4()), "unit-secret")
+    token = share_token.build_token(uuid.uuid4(), "unit-secret")
 
     with patch.object(core_router.core_utils, "return_frontend_index", return_value=None) as lookup:
         response = TestClient(app).get(f"/live/{token}")

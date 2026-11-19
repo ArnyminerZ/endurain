@@ -12,7 +12,7 @@ import modules.auth.dependencies as auth_deps
 import modules.live_tracking.public_router as public_router
 import modules.live_tracking.router as router
 import modules.live_tracking.service as live_tracking_service
-from tests.live_tracking.conftest import USER_ID
+from tests.live_tracking.conftest import OTHER_USER_ID, USER_ID
 
 _PUSH = {"points": [{"recorded_at": "2026-10-22T10:00:00+00:00", "latitude": 39.0, "longitude": -0.5}]}
 
@@ -21,7 +21,7 @@ _PUSH = {"points": [{"recorded_at": "2026-10-22T10:00:00+00:00", "latitude": 39.
 def _config():
     with (
         patch.object(live_tracking_service.core_config, "read_secret", return_value="unit-secret"),
-        patch.object(live_tracking_service.core_mail, "is_mail_configured", return_value=False),
+        patch.object(live_tracking_service.server_settings_integration, "is_mail_configured", return_value=False),
         patch.object(
             live_tracking_service.users_integration,
             "get_user",
@@ -37,7 +37,7 @@ def _app(db, user_id=USER_ID):
     app.include_router(public_router.router, prefix="/public/live")
     core_exceptions.register_exception_handlers(app)
     app.dependency_overrides[auth_deps.check_scopes] = lambda: None
-    app.dependency_overrides[auth_deps.get_sub_from_access_token] = lambda: user_id
+    app.dependency_overrides[auth_deps.get_current_user_id] = lambda: user_id
     app.dependency_overrides[core_db.get_db] = lambda: db
     return app
 
@@ -223,7 +223,7 @@ class TestLifecycle:
     def test_other_user_gets_404(self, db):
         owner = TestClient(_app(db))
         started = _start(owner)
-        stranger = TestClient(_app(db, user_id=USER_ID + 1))
+        stranger = TestClient(_app(db, user_id=OTHER_USER_ID))
         session_id = started["session"]["id"]
         assert stranger.get(f"/live/sessions/{session_id}").status_code == 404
         assert stranger.post(f"/live/sessions/{session_id}/points", json=_PUSH).status_code == 404
@@ -256,15 +256,18 @@ class TestPublicEndpoint:
     def test_requires_no_auth_dependencies(self):
         deps = [d.call for route in public_router.router.routes for d in route.dependant.dependencies]
         assert auth_deps.check_scopes not in deps
-        assert auth_deps.get_sub_from_access_token not in deps
+        assert auth_deps.get_current_user_id not in deps
 
 
 class TestContacts:
     def test_crud(self, client):
         created = client.post("/live/contacts", json={"name": "Ana", "email": "ana@example.com"})
         assert created.status_code == 201
-        assert client.get("/live/contacts").json() == [created.json()]
+        assert created.headers["Location"] == f"/live/contacts/{created.json()['id']}"
+        assert client.get("/live/contacts").json()["items"] == [created.json()]
+        assert client.get(f"/live/contacts/{created.json()['id']}").json() == created.json()
         assert client.post("/live/contacts", json={"name": "Ana", "email": "ana@example.com"}).status_code == 409
         assert client.post("/live/contacts", json={"name": "Ana", "email": "not-an-email"}).status_code == 422
         assert client.delete(f"/live/contacts/{created.json()['id']}").status_code == 204
-        assert client.get("/live/contacts").json() == []
+        assert client.get("/live/contacts").json()["items"] == []
+        assert client.get(f"/live/contacts/{created.json()['id']}").status_code == 404

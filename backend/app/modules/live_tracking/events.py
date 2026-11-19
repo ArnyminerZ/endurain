@@ -4,6 +4,7 @@ Payloads carry ids only: events can be persisted, and the share link is derived
 by the subscriber from the session id rather than travelling in the event.
 """
 
+import uuid
 from typing import ClassVar
 
 from jasil.event_versioning import VersionedPayload
@@ -25,5 +26,5 @@ class LiveSessionStartedPayload(VersionedPayload):
 
     SCHEMA_VERSION: ClassVar[int] = 1
 
-    session_id: str
-    contact_ids: list[int]
+    session_id: uuid.UUID
+    contact_ids: list[uuid.UUID]

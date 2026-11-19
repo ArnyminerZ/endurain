@@ -1,8 +1,10 @@
+import uuid
 from datetime import timedelta
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
+from sqlalchemy.exc import OperationalError
 
 import core.exceptions as core_exceptions
 import modules.live_tracking.constants as live_tracking_constants
@@ -10,7 +12,7 @@ import modules.live_tracking.crud as live_tracking_crud
 import modules.live_tracking.schema as live_tracking_schema
 import modules.live_tracking.service as live_tracking_service
 import modules.live_tracking.share_token as live_tracking_share_token
-from tests.live_tracking.conftest import USER_ID, point, push, track
+from tests.live_tracking.conftest import OTHER_USER_ID, USER_ID, point, push, track
 
 _USER = SimpleNamespace(id=USER_ID, name="Arnau Mora", preferred_language="en")
 
@@ -23,7 +25,7 @@ def _config():
 
 @pytest.fixture
 def no_mail():
-    with patch.object(live_tracking_service.core_mail, "is_mail_configured", return_value=False):
+    with patch.object(live_tracking_service.server_settings_integration, "is_mail_configured", return_value=False):
         yield
 
 
@@ -64,7 +66,7 @@ class TestStartSession:
 
     def test_unknown_contact_is_rejected(self, db, no_mail):
         with pytest.raises(core_exceptions.InvalidInputError):
-            _start(db, notify_contact_ids=[999])
+            _start(db, notify_contact_ids=[uuid.uuid4()])
 
     def test_publishes_email_event_for_selected_contacts(self, db):
         first = live_tracking_service.add_contact(
@@ -74,7 +76,7 @@ class TestStartSession:
             USER_ID, live_tracking_schema.LiveContactCreate(name="Bo", email="bo@example.com"), db
         )
         with (
-            patch.object(live_tracking_service.core_mail, "is_mail_configured", return_value=True),
+            patch.object(live_tracking_service.server_settings_integration, "is_mail_configured", return_value=True),
             patch.object(live_tracking_service.live_tracking_event_publishers, "publish_live_session_started") as pub,
         ):
             pub.side_effect = lambda *a, commit, **k: commit()
@@ -83,7 +85,7 @@ class TestStartSession:
         assert pub.call_args.args[2] == [first.id]
 
     def test_no_contacts_still_commits(self, db):
-        with patch.object(live_tracking_service.core_mail, "is_mail_configured", return_value=True):
+        with patch.object(live_tracking_service.server_settings_integration, "is_mail_configured", return_value=True):
             started = _start(db)
         assert live_tracking_crud.get_session(started.session.id, db) is not None
 
@@ -106,7 +108,7 @@ class TestPushPoints:
     def test_other_user_cannot_push(self, db, now, no_mail):
         started = _start(db)
         with pytest.raises(core_exceptions.AccessConcealedError):
-            live_tracking_service.push_points(started.session.id, USER_ID + 1, push(track(now)), db)
+            live_tracking_service.push_points(started.session.id, OTHER_USER_ID, push(track(now)), db)
 
     def test_rejects_naive_future_and_ancient_points(self, db, now, no_mail):
         started = _start(db)
@@ -155,7 +157,7 @@ class TestStopSession:
     def test_other_user_cannot_stop(self, db, no_mail):
         started = _start(db)
         with pytest.raises(core_exceptions.AccessConcealedError):
-            live_tracking_service.stop_session(started.session.id, USER_ID + 1, db)
+            live_tracking_service.stop_session(started.session.id, OTHER_USER_ID, db)
 
     def test_new_session_possible_after_stop(self, db, no_mail):
         started = _start(db)
@@ -242,7 +244,9 @@ class TestStaleSessions:
         _start(db)
         with (
             patch.object(live_tracking_service, "_now", return_value=now + timedelta(days=2)),
-            patch.object(live_tracking_service, "_end_session", side_effect=RuntimeError("boom")),
+            patch.object(
+                live_tracking_service, "_end_session", side_effect=OperationalError("boom", None, Exception())
+            ),
         ):
             assert live_tracking_service.finish_stale_sessions(db) == 0
 
@@ -260,9 +264,9 @@ class TestContacts:
             USER_ID, live_tracking_schema.LiveContactCreate(name="Ana", email="Ana@Example.com"), db
         )
         assert created.email == "ana@example.com"
-        assert [c.id for c in live_tracking_service.list_contacts(USER_ID, db)] == [created.id]
+        assert [c.id for c in live_tracking_service.list_contacts(USER_ID, 1, 50, db).items] == [created.id]
         live_tracking_service.remove_contact(created.id, USER_ID, db)
-        assert live_tracking_service.list_contacts(USER_ID, db) == []
+        assert live_tracking_service.list_contacts(USER_ID, 1, 50, db).items == []
 
     def test_duplicate_email_conflicts(self, db):
         data = live_tracking_schema.LiveContactCreate(name="Ana", email="ana@example.com")
@@ -285,7 +289,7 @@ class TestContacts:
             USER_ID, live_tracking_schema.LiveContactCreate(name="Ana", email="ana@example.com"), db
         )
         with pytest.raises(core_exceptions.NotFoundError):
-            live_tracking_service.remove_contact(created.id, USER_ID + 1, db)
+            live_tracking_service.remove_contact(created.id, OTHER_USER_ID, db)
 
 
 class TestSessionStartedEmails:

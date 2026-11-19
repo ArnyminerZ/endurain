@@ -1,20 +1,21 @@
-import type { Gear } from '@/features/gears/types'
+import type { Gear, GearType } from '@/features/gears/types'
+import { GEAR_TYPE_VALUES } from '@/features/gears/utils/gearType'
 
 /**
  * A run of gears sharing one gear type, used to render grouped pickers.
  *
- * @property gearType - Numeric gear-type identifier shared by the group.
+ * @property gearType - Gear type shared by the group.
  * @property gears - The gears of that type, in their original order.
  */
 export interface GearGroup {
-  gearType: number
+  gearType: GearType
   gears: Gear[]
 }
 
 /**
  * Splits gears into one group per gear type, dropping empty types. The
  * `preferredType` group (the family that suits the activity) comes first; the
- * rest follow in ascending gear-type order so the picker layout is stable.
+ * rest follow in gear-type display order so the picker layout is stable.
  *
  * @param gears - The gears to group (any mix of types).
  * @param preferredType - Gear type to list first, or `null` for none.
@@ -22,9 +23,9 @@ export interface GearGroup {
  */
 export function groupGearsByType(
   gears: readonly Gear[],
-  preferredType: number | null,
+  preferredType: GearType | null,
 ): GearGroup[] {
-  const byType = new Map<number, Gear[]>()
+  const byType = new Map<GearType, Gear[]>()
   for (const gear of gears) {
     const bucket = byType.get(gear.gearType)
     if (bucket) {
@@ -34,6 +35,7 @@ export function groupGearsByType(
     }
   }
 
+  const order = (type: GearType) => GEAR_TYPE_VALUES.indexOf(type)
   return [...byType.entries()]
     .map(([gearType, groupGears]) => ({ gearType, gears: groupGears }))
     .sort((a, b) => {
@@ -43,6 +45,6 @@ export function groupGearsByType(
       if (b.gearType === preferredType) {
         return 1
       }
-      return a.gearType - b.gearType
+      return order(a.gearType) - order(b.gearType)
     })
 }
