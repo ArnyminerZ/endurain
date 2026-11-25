@@ -35,7 +35,8 @@ _REVISION_92 = "1087a5442836"
 _RETIRED_DATA_MIGRATIONS = {1, 2, 3, 4, 5, 6, 8, 9, 10}
 _UNPREFIXED_SUBSTRATE_TABLES = ("event_log", "event_outbox", "processing_jobs")
 #: The tables the chain empties by design: their record ids name rows whose ids change (revisions 11, 13 and 14), and
-#: the sessions and everything that proves one (revision 15, decision C).
+#: the sessions and everything that proves one (revision 15, decision C), and the live tracking tables, which
+#: revision 18 creates after the seeded revision.
 _TABLES_EMPTIED_BY_THE_CHAIN = {
     "health_record_deletions",
     "gear_deletions",
@@ -45,6 +46,9 @@ _TABLES_EMPTIED_BY_THE_CHAIN = {
     "idp_session_tokens",
     "users_sessions",
     "oauth_states",
+    "live_sessions",
+    "live_points",
+    "live_contacts",
 }
 #: The one table revision 11 empties.
 _TABLE_EMPTIED_BY_REVISION_87 = "health_record_deletions"

@@ -10,6 +10,7 @@ from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+import core.database as core_database
 import core.exceptions as core_exceptions
 import modules.live_tracking.constants as live_tracking_constants
 import modules.live_tracking.models as live_tracking_models
@@ -375,12 +376,13 @@ def delete_contact(contact_id: uuid.UUID, user_id: uuid.UUID, db: Session) -> No
     Raises:
         NotFoundError: If the user has no such contact.
     """
-    result = db.execute(
+    deleted = core_database.rowcount(
+        db,
         delete(live_tracking_models.LiveContact).where(
             live_tracking_models.LiveContact.id == contact_id,
             live_tracking_models.LiveContact.user_id == user_id,
-        )
+        ),
     )
-    if result.rowcount == 0:  # type: ignore[attr-defined]
+    if deleted == 0:
         raise core_exceptions.NotFoundError("Contact not found")
     db.flush()
