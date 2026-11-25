@@ -13,6 +13,7 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { inputFieldClass } from '@/components/ui/input/fieldClasses'
 import { useToasts } from '@/composables/useToasts'
+import { isStaleWrite } from '@/services/ifMatch'
 import {
   useActivityGearOptionsQuery,
   useSetActivityGearMutation,
@@ -45,7 +46,7 @@ const isRemoveOpen = ref(false)
 // Any gear can be assigned to any activity; the suited type is listed first.
 const { groups: gearGroups } = useActivityGearOptionsQuery(gearType, isPickerOpen)
 const hasGears = computed(() => gearGroups.value.length > 0)
-const selectedGearId = ref<number | null>(props.activity.gearId)
+const selectedGearId = ref<string | null>(props.activity.gearId)
 
 // Whether the card has anything to show: the activity supports gear, or one is
 // already set (e.g. after the activity type changed). Otherwise it is hidden.
@@ -68,8 +69,11 @@ async function submitGear(): Promise<void> {
     await setGearMutation.mutateAsync({ activity: props.activity, gearId: selectedGearId.value })
     isPickerOpen.value = false
     toasts.success(t('activities.gear.saveSuccess'))
-  } catch {
-    toasts.error(t('activities.gear.saveError'))
+  } catch (error) {
+    if (isStaleWrite(error)) {
+      isPickerOpen.value = false
+    }
+    toasts.error(isStaleWrite(error) ? t('app.staleError') : t('activities.gear.saveError'))
   }
 }
 
@@ -79,8 +83,11 @@ async function removeGear(): Promise<void> {
     await setGearMutation.mutateAsync({ activity: props.activity, gearId: null })
     isRemoveOpen.value = false
     toasts.success(t('activities.gear.removeSuccess'))
-  } catch {
-    toasts.error(t('activities.gear.removeError'))
+  } catch (error) {
+    if (isStaleWrite(error)) {
+      isRemoveOpen.value = false
+    }
+    toasts.error(isStaleWrite(error) ? t('app.staleError') : t('activities.gear.removeError'))
   }
 }
 </script>
@@ -111,7 +118,7 @@ async function removeGear(): Promise<void> {
 
     <RouterLink
       v-if="activity.gearId"
-      :to="{ name: 'gear', params: { id: String(activity.gearId) } }"
+      :to="{ name: 'gear', params: { id: activity.gearId } }"
       class="self-start text-body text-brand hover:underline"
     >
       {{ currentGear?.nickname ?? t('activities.gear.loading') }}

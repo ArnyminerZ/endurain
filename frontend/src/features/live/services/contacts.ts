@@ -1,6 +1,7 @@
 import type { LiveContact, LiveContactInput } from '@/features/live/types'
 
 import { apiFetch } from '@/services/http'
+import { fetchAllPages } from '@/services/pagination'
 
 /**
  * Fetches the people emailed when the user starts a live track.
@@ -10,7 +11,7 @@ import { apiFetch } from '@/services/http'
  * @throws {HttpError} When the request fails.
  */
 export function fetchLiveContacts(signal?: AbortSignal): Promise<LiveContact[]> {
-  return apiFetch<LiveContact[]>('/live/contacts', { signal })
+  return fetchAllPages<LiveContact>('/live/contacts', new URLSearchParams(), { signal })
 }
 
 /**
@@ -35,6 +36,6 @@ export function createLiveContact(input: LiveContactInput): Promise<LiveContact>
  * @param id - The contact id.
  * @throws {HttpError} When the request fails.
  */
-export async function deleteLiveContact(id: number): Promise<void> {
+export async function deleteLiveContact(id: string): Promise<void> {
   await apiFetch<void>(`/live/contacts/${id}`, { method: 'DELETE', responseType: 'void' })
 }

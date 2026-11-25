@@ -15,17 +15,27 @@ beforeEach(() => {
 
 describe('fetchLiveContacts', () => {
   it('reads the contact list', async () => {
-    const contacts = [{ id: 1, name: 'Ana', email: 'ana@example.com' }]
-    vi.mocked(apiFetch).mockResolvedValueOnce(contacts)
+    const contacts = [{ id: 'contact-1', name: 'Ana', email: 'ana@example.com' }]
+    vi.mocked(apiFetch).mockResolvedValueOnce({
+      items: contacts,
+      total: 1,
+      page: 1,
+      num_records: 200,
+      next: null,
+    })
 
     await expect(fetchLiveContacts()).resolves.toEqual(contacts)
-    expect(apiFetch).toHaveBeenCalledWith('/live/contacts', { signal: undefined })
+    expect(vi.mocked(apiFetch).mock.calls[0]?.[0]).toContain('/live/contacts')
   })
 })
 
 describe('createLiveContact', () => {
   it('posts the trimmed name and email as JSON', async () => {
-    vi.mocked(apiFetch).mockResolvedValueOnce({ id: 2, name: 'Bo', email: 'bo@example.com' })
+    vi.mocked(apiFetch).mockResolvedValueOnce({
+      id: 'contact-2',
+      name: 'Bo',
+      email: 'bo@example.com',
+    })
 
     await createLiveContact({ name: '  Bo ', email: ' bo@example.com ' })
 
@@ -40,9 +50,9 @@ describe('deleteLiveContact', () => {
   it('deletes by id without expecting a body', async () => {
     vi.mocked(apiFetch).mockResolvedValueOnce(undefined)
 
-    await deleteLiveContact(7)
+    await deleteLiveContact('contact-7')
 
-    expect(apiFetch).toHaveBeenCalledWith('/live/contacts/7', {
+    expect(apiFetch).toHaveBeenCalledWith('/live/contacts/contact-7', {
       method: 'DELETE',
       responseType: 'void',
     })

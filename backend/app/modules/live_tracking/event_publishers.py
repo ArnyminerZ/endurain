@@ -1,5 +1,6 @@
 """Publish the live tracking domain events through the platform publish facade."""
 
+import uuid
 from collections.abc import Callable
 
 import jasil.publisher as platform_publisher
@@ -10,9 +11,9 @@ import modules.live_tracking.events as live_tracking_events
 
 
 def publish_live_session_started(
-    user_id: int,
-    session_id: str,
-    contact_ids: list[int],
+    user_id: uuid.UUID,
+    session_id: uuid.UUID,
+    contact_ids: list[uuid.UUID],
     db: Session,
     *,
     commit: Callable[[], None],
@@ -29,9 +30,9 @@ def publish_live_session_started(
     payload = live_tracking_events.LiveSessionStartedPayload(session_id=session_id, contact_ids=contact_ids)
     platform_publisher.publish_committing(
         live_tracking_events.LIVE_SESSION_STARTED,
-        payload.model_dump(),
+        payload.model_dump(mode="json"),
         source="api:start_live_session",
-        metadata={core_event_metadata.META_USER_ID: user_id},
+        metadata={core_event_metadata.META_USER_ID: str(user_id)},
         db=db,
         commit=commit,
         schema_version=payload.SCHEMA_VERSION,

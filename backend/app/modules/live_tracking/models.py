@@ -25,7 +25,7 @@ class LiveSession(Base, TimestampMixin):
     """One live tracking session.
 
     Attributes:
-        id: UUID string; also the identity inside the share token.
+        id: Primary key, a random UUID; also the identity inside the share token.
         user_id: Owner of the session.
         status: ``active`` or ``ended``.
         activity_type: Activity type name handed to the GPX parser on stop.
@@ -49,13 +49,12 @@ class LiveSession(Base, TimestampMixin):
         ),
     )
 
-    id: Mapped[str] = mapped_column(
-        String(length=36),
+    id: Mapped[uuid.UUID] = mapped_column(
         primary_key=True,
-        default=lambda: str(uuid.uuid4()),
+        default=uuid.uuid4,
         comment="Session UUID, also embedded in the share token",
     )
-    user_id: Mapped[int] = mapped_column(
+    user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -112,7 +111,7 @@ class LivePoint(Base):
     """One position update of a live session.
 
     Attributes:
-        id: Surrogate primary key.
+        id: Primary key, a random UUID.
         session_id: The session the point belongs to.
         recorded_at: When the device recorded the point.
         latitude: Latitude in degrees.
@@ -140,8 +139,8 @@ class LivePoint(Base):
         CheckConstraint("phone_signal_type IN ('rsrp', 'rssi', 'rscp')", name="ck_live_points_phone_signal_type"),
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    session_id: Mapped[str] = mapped_column(
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    session_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("live_sessions.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -192,7 +191,7 @@ class LiveContact(Base, TimestampMixin):
     """A person the user wants notified when a live session starts.
 
     Attributes:
-        id: Surrogate primary key.
+        id: Primary key, a random UUID.
         user_id: The user whose contact this is.
         name: Display name of the contact.
         email: Email address the start notification is sent to.
@@ -201,8 +200,8 @@ class LiveContact(Base, TimestampMixin):
     __tablename__ = "live_contacts"
     __table_args__ = (UniqueConstraint("user_id", "email", name="uq_live_contacts_user_email"),)
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
-    user_id: Mapped[int] = mapped_column(
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

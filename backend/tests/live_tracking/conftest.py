@@ -1,10 +1,12 @@
+import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from tests._helpers.db import create_sqlite_session
 
-USER_ID = 7
+USER_ID = uuid.UUID("00000000-0000-4000-8000-000000000007")
+OTHER_USER_ID = uuid.UUID("00000000-0000-4000-8000-000000000008")
 
 
 @pytest.fixture

@@ -15,6 +15,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import jasil.providers as platform_providers
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 import core.config as core_config
@@ -28,6 +29,7 @@ import modules.live_tracking.email_messages as live_tracking_email_messages
 import modules.live_tracking.event_publishers as live_tracking_event_publishers
 import modules.live_tracking.schema as live_tracking_schema
 import modules.live_tracking.share_token as live_tracking_share_token
+import modules.server_settings.integration_service as server_settings_integration
 import modules.users.users.integration_service as users_integration
 
 logger = core_logger.get_logger(__name__)
@@ -63,11 +65,11 @@ def _secret() -> str:
     return core_config.read_secret("SECRET_KEY") or ""
 
 
-def share_url(session_id: str) -> str:
+def share_url(session_id: uuid.UUID) -> str:
     """Return the public link for a session.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
 
     Returns:
         The frontend URL that viewers open.
@@ -76,11 +78,11 @@ def share_url(session_id: str) -> str:
     return f"{core_config.settings.ENDURAIN_HOST}/live/{token}"
 
 
-def _get_owned_session(session_id: str, user_id: int, db: Session) -> live_tracking_schema.LiveSessionRead:
+def _get_owned_session(session_id: uuid.UUID, user_id: uuid.UUID, db: Session) -> live_tracking_schema.LiveSessionRead:
     """Return a session the user owns, answering like a missing one otherwise.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         user_id: The authenticated user.
         db: Database session.
 
@@ -101,7 +103,7 @@ def _get_owned_session(session_id: str, user_id: int, db: Session) -> live_track
 
 
 def start_session(
-    user_id: int, data: live_tracking_schema.LiveSessionStart, db: Session
+    user_id: uuid.UUID, data: live_tracking_schema.LiveSessionStart, db: Session
 ) -> live_tracking_schema.LiveSessionStarted:
     """Start a live session and queue the contact notification emails.
 
@@ -134,7 +136,7 @@ def start_session(
 
     now = _now()
     session = live_tracking_crud.create_session(
-        str(uuid.uuid4()),
+        uuid.uuid4(),
         user_id,
         data.activity_type,
         data.name,
@@ -143,7 +145,7 @@ def start_session(
         data.update_interval_seconds,
         db,
     )
-    email_enabled = core_mail.is_mail_configured()
+    email_enabled = server_settings_integration.is_mail_configured(db)
     notified = contact_ids if email_enabled else []
     if notified:
         live_tracking_event_publishers.publish_live_session_started(user_id, session.id, notified, db, commit=db.commit)
@@ -162,12 +164,12 @@ def start_session(
 
 
 def push_points(
-    session_id: str, user_id: int, data: live_tracking_schema.LivePointsPush, db: Session
+    session_id: uuid.UUID, user_id: uuid.UUID, data: live_tracking_schema.LivePointsPush, db: Session
 ) -> live_tracking_schema.LivePushResult:
     """Store a batch of points on the user's active session.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         user_id: The authenticated user.
         data: The points. Resending stored points is harmless.
         db: Database session.
@@ -208,12 +210,12 @@ def push_points(
 
 
 def get_owner_view(
-    session_id: str, user_id: int, since: datetime | None, db: Session
+    session_id: uuid.UUID, user_id: uuid.UUID, since: datetime | None, db: Session
 ) -> live_tracking_schema.LiveSessionOwnerView:
     """Return a session the user owns with its points and link.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         user_id: The authenticated user.
         since: Return only points recorded after this time.
         db: Database session.
@@ -229,7 +231,7 @@ def get_owner_view(
     return live_tracking_schema.LiveSessionOwnerView(session=session, share_url=share_url(session_id), points=points)
 
 
-def get_active_view(user_id: int, db: Session) -> live_tracking_schema.LiveSessionOwnerView:
+def get_active_view(user_id: uuid.UUID, db: Session) -> live_tracking_schema.LiveSessionOwnerView:
     """Return the user's active session.
 
     Args:
@@ -270,11 +272,11 @@ def _end_session(session: live_tracking_schema.LiveSessionRead, db: Session) -> 
     return live_tracking_crud.get_session(session.id, db) or session
 
 
-def stop_session(session_id: str, user_id: int, db: Session) -> live_tracking_schema.LiveSessionRead:
+def stop_session(session_id: uuid.UUID, user_id: uuid.UUID, db: Session) -> live_tracking_schema.LiveSessionRead:
     """Stop the user's session; the share link stops working and the live points are deleted.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         user_id: The authenticated user.
         db: Database session.
 
@@ -287,11 +289,11 @@ def stop_session(session_id: str, user_id: int, db: Session) -> live_tracking_sc
     return _end_session(_get_owned_session(session_id, user_id, db), db)
 
 
-def cancel_session(session_id: str, user_id: int, db: Session) -> None:
+def cancel_session(session_id: uuid.UUID, user_id: uuid.UUID, db: Session) -> None:
     """Delete the user's session and its points.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         user_id: The authenticated user.
         db: Database session.
 
@@ -320,7 +322,7 @@ def finish_stale_sessions(db: Session) -> int:
         try:
             _end_session(session, db)
             finished += 1
-        except Exception as err:
+        except SQLAlchemyError as err:
             db.rollback()
             logger.error(
                 "Could not finish a stale live session",
@@ -374,21 +376,45 @@ def get_public_view(token: str, since: datetime | None, db: Session) -> live_tra
     )
 
 
-def list_contacts(user_id: int, db: Session) -> list[live_tracking_schema.LiveContactRead]:
-    """Return the user's contacts.
+def list_contacts(
+    user_id: uuid.UUID, page_number: int, num_records: int, db: Session
+) -> live_tracking_schema.LiveContactPage:
+    """Return one page of the user's contacts.
 
     Args:
+        user_id: The authenticated user.
+        page_number: The 1-based page number.
+        num_records: The page size.
+        db: Database session.
+
+    Returns:
+        The page of contacts.
+    """
+    contacts = live_tracking_crud.list_contacts(user_id, db, offset=(page_number - 1) * num_records, limit=num_records)
+    return live_tracking_schema.LiveContactPage.build(
+        contacts, live_tracking_crud.count_contacts(user_id, db), page_number, num_records
+    )
+
+
+def get_contact(contact_id: uuid.UUID, user_id: uuid.UUID, db: Session) -> live_tracking_schema.LiveContactRead:
+    """Return one of the user's contacts.
+
+    Args:
+        contact_id: The contact id.
         user_id: The authenticated user.
         db: Database session.
 
     Returns:
-        The contacts.
+        The contact.
+
+    Raises:
+        NotFoundError: When the user has no such contact.
     """
-    return live_tracking_crud.list_contacts(user_id, db)
+    return live_tracking_crud.get_contact(contact_id, user_id, db)
 
 
 def add_contact(
-    user_id: int, data: live_tracking_schema.LiveContactCreate, db: Session
+    user_id: uuid.UUID, data: live_tracking_schema.LiveContactCreate, db: Session
 ) -> live_tracking_schema.LiveContactRead:
     """Add a contact to the user's list.
 
@@ -412,7 +438,7 @@ def add_contact(
     return contact
 
 
-def remove_contact(contact_id: int, user_id: int, db: Session) -> None:
+def remove_contact(contact_id: uuid.UUID, user_id: uuid.UUID, db: Session) -> None:
     """Remove one of the user's contacts.
 
     Args:
@@ -429,7 +455,7 @@ def remove_contact(contact_id: int, user_id: int, db: Session) -> None:
 
 
 def send_session_started_emails(
-    session_id: str, contact_ids: list[int], mail: platform_providers.MailProvider, db: Session
+    session_id: uuid.UUID, contact_ids: list[uuid.UUID], mail: platform_providers.MailProvider, db: Session
 ) -> int:
     """Email the share link to the chosen contacts of a session that just started.
 
@@ -437,7 +463,7 @@ def send_session_started_emails(
     link would only confuse the recipient.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         contact_ids: The contacts to notify.
         mail: The platform mail provider.
         db: Database session.

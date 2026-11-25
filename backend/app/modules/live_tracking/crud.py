@@ -3,6 +3,7 @@
 Every function flushes without committing: the service owns the transaction.
 """
 
+import uuid
 from datetime import UTC, datetime
 
 from sqlalchemy import delete, func, select, update
@@ -20,8 +21,8 @@ _ENDED = live_tracking_constants.SessionStatus.ENDED.value
 
 
 def create_session(
-    session_id: str,
-    user_id: int,
+    session_id: uuid.UUID,
+    user_id: uuid.UUID,
     activity_type: str,
     name: str | None,
     now: datetime,
@@ -32,7 +33,7 @@ def create_session(
     """Stage a new active session.
 
     Args:
-        session_id: The new session UUID string.
+        session_id: The new session id.
         user_id: The owner.
         activity_type: Activity type name.
         name: Optional workout name.
@@ -67,11 +68,11 @@ def create_session(
     return live_tracking_serializers.to_session_schema(row)
 
 
-def get_session(session_id: str, db: Session) -> live_tracking_schema.LiveSessionRead | None:
+def get_session(session_id: uuid.UUID, db: Session) -> live_tracking_schema.LiveSessionRead | None:
     """Return a session by id.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         db: Database session.
 
     Returns:
@@ -81,7 +82,7 @@ def get_session(session_id: str, db: Session) -> live_tracking_schema.LiveSessio
     return live_tracking_serializers.to_session_schema(row) if row is not None else None
 
 
-def get_active_session_for_user(user_id: int, db: Session) -> live_tracking_schema.LiveSessionRead | None:
+def get_active_session_for_user(user_id: uuid.UUID, db: Session) -> live_tracking_schema.LiveSessionRead | None:
     """Return the user's active session, if any.
 
     Args:
@@ -99,11 +100,11 @@ def get_active_session_for_user(user_id: int, db: Session) -> live_tracking_sche
     return live_tracking_serializers.to_session_schema(row) if row is not None else None
 
 
-def count_points(session_id: str, db: Session) -> int:
+def count_points(session_id: uuid.UUID, db: Session) -> int:
     """Count a session's stored points.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         db: Database session.
 
     Returns:
@@ -114,7 +115,7 @@ def count_points(session_id: str, db: Session) -> int:
 
 
 def insert_points(
-    session_id: str,
+    session_id: uuid.UUID,
     points: list[live_tracking_schema.LivePointIn],
     now: datetime,
     db: Session,
@@ -122,7 +123,7 @@ def insert_points(
     """Store the points not already stored and touch the session's last update.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         points: The points to store.
         now: The receive time.
         db: Database session.
@@ -154,7 +155,7 @@ def insert_points(
 
 
 def list_points(
-    session_id: str,
+    session_id: uuid.UUID,
     db: Session,
     *,
     since: datetime | None = None,
@@ -163,7 +164,7 @@ def list_points(
     """Return a session's points in chronological order.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         db: Database session.
         since: Return only points recorded after this time.
         limit: Most points to return.
@@ -178,11 +179,11 @@ def list_points(
     return [live_tracking_serializers.to_point_schema(row) for row in db.scalars(stmt).all()]
 
 
-def get_latest_point(session_id: str, db: Session) -> live_tracking_schema.LivePointRead | None:
+def get_latest_point(session_id: uuid.UUID, db: Session) -> live_tracking_schema.LivePointRead | None:
     """Return a session's newest point.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         db: Database session.
 
     Returns:
@@ -198,11 +199,11 @@ def get_latest_point(session_id: str, db: Session) -> live_tracking_schema.LiveP
     return live_tracking_serializers.to_point_schema(row) if row is not None else None
 
 
-def end_session(session_id: str, ended_at: datetime, db: Session) -> None:
+def end_session(session_id: uuid.UUID, ended_at: datetime, db: Session) -> None:
     """Mark a session ended, which kills its share link.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         ended_at: The end time.
         db: Database session.
     """
@@ -214,22 +215,22 @@ def end_session(session_id: str, ended_at: datetime, db: Session) -> None:
     db.flush()
 
 
-def delete_points(session_id: str, db: Session) -> None:
+def delete_points(session_id: uuid.UUID, db: Session) -> None:
     """Delete all of a session's points.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         db: Database session.
     """
     db.execute(delete(live_tracking_models.LivePoint).where(live_tracking_models.LivePoint.session_id == session_id))
     db.flush()
 
 
-def delete_session(session_id: str, db: Session) -> None:
+def delete_session(session_id: uuid.UUID, db: Session) -> None:
     """Delete a session and its points.
 
     Args:
-        session_id: The session UUID string.
+        session_id: The session id.
         db: Database session.
     """
     db.execute(delete(live_tracking_models.LivePoint).where(live_tracking_models.LivePoint.session_id == session_id))
@@ -275,12 +276,16 @@ def list_ended_sessions_before(before: datetime, db: Session) -> list[live_track
     return [live_tracking_serializers.to_session_schema(row) for row in db.scalars(stmt).all()]
 
 
-def list_contacts(user_id: int, db: Session) -> list[live_tracking_schema.LiveContactRead]:
+def list_contacts(
+    user_id: uuid.UUID, db: Session, *, offset: int = 0, limit: int | None = None
+) -> list[live_tracking_schema.LiveContactRead]:
     """Return a user's contacts.
 
     Args:
         user_id: The owner.
         db: Database session.
+        offset: How many contacts to skip.
+        limit: The most contacts to return, or ``None`` for all of them.
 
     Returns:
         The contacts ordered by id.
@@ -289,11 +294,38 @@ def list_contacts(user_id: int, db: Session) -> list[live_tracking_schema.LiveCo
         select(live_tracking_models.LiveContact)
         .where(live_tracking_models.LiveContact.user_id == user_id)
         .order_by(live_tracking_models.LiveContact.id)
+        .offset(offset)
+        .limit(limit)
     )
     return [live_tracking_serializers.to_contact_schema(row) for row in db.scalars(stmt).all()]
 
 
-def count_contacts(user_id: int, db: Session) -> int:
+def get_contact(contact_id: uuid.UUID, user_id: uuid.UUID, db: Session) -> live_tracking_schema.LiveContactRead:
+    """Return one of a user's contacts.
+
+    Args:
+        contact_id: The contact id.
+        user_id: The owner.
+        db: Database session.
+
+    Returns:
+        The contact.
+
+    Raises:
+        NotFoundError: If the user has no such contact.
+    """
+    row = db.scalar(
+        select(live_tracking_models.LiveContact).where(
+            live_tracking_models.LiveContact.id == contact_id,
+            live_tracking_models.LiveContact.user_id == user_id,
+        )
+    )
+    if row is None:
+        raise core_exceptions.NotFoundError("Contact not found")
+    return live_tracking_serializers.to_contact_schema(row)
+
+
+def count_contacts(user_id: uuid.UUID, db: Session) -> int:
     """Count a user's contacts.
 
     Args:
@@ -307,7 +339,7 @@ def count_contacts(user_id: int, db: Session) -> int:
     return db.scalar(stmt.where(live_tracking_models.LiveContact.user_id == user_id)) or 0
 
 
-def create_contact(user_id: int, name: str, email: str, db: Session) -> live_tracking_schema.LiveContactRead:
+def create_contact(user_id: uuid.UUID, name: str, email: str, db: Session) -> live_tracking_schema.LiveContactRead:
     """Stage a new contact.
 
     Args:
@@ -332,7 +364,7 @@ def create_contact(user_id: int, name: str, email: str, db: Session) -> live_tra
     return live_tracking_serializers.to_contact_schema(row)
 
 
-def delete_contact(contact_id: int, user_id: int, db: Session) -> None:
+def delete_contact(contact_id: uuid.UUID, user_id: uuid.UUID, db: Session) -> None:
     """Delete one of a user's contacts.
 
     Args:

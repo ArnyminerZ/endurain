@@ -1,9 +1,11 @@
 """Pydantic schemas for live tracking."""
 
+import uuid
 from datetime import UTC, datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, StrictInt, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
+import core.pagination as core_pagination
 import modules.live_tracking.constants as live_tracking_constants
 
 
@@ -137,7 +139,7 @@ class LiveSessionStart(BaseModel):
 
     activity_type: str = Field(default=live_tracking_constants.DEFAULT_ACTIVITY_TYPE, min_length=1, max_length=50)
     name: str | None = Field(default=None, max_length=150)
-    notify_contact_ids: list[StrictInt] | None = Field(default=None, max_length=100)
+    notify_contact_ids: list[uuid.UUID] | None = Field(default=None, max_length=100)
     update_interval_seconds: int = Field(
         default=live_tracking_constants.DEFAULT_UPDATE_INTERVAL_SECONDS,
         ge=live_tracking_constants.MIN_UPDATE_INTERVAL_SECONDS,
@@ -150,8 +152,8 @@ class LiveSessionRead(BaseModel):
 
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
-    id: str
-    user_id: int
+    id: uuid.UUID
+    user_id: uuid.UUID
     status: live_tracking_constants.SessionStatus
     activity_type: str
     name: str | None = None
@@ -214,9 +216,13 @@ class LiveContactRead(BaseModel):
 
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
-    id: int
+    id: uuid.UUID
     name: str
     email: str
+
+
+class LiveContactPage(core_pagination.Page[LiveContactRead]):
+    """One page of a user's contacts."""
 
 
 class PublicLiveView(BaseModel):

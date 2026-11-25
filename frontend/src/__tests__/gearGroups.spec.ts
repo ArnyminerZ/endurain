@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import type { Gear } from '@/features/gears/types'
+import type { Gear, GearType } from '@/features/gears/types'
 
 import { GEAR_TYPE } from '@/features/gears/utils/gearType'
 import { groupGearsByType } from '@/features/gears/utils/gearGroups'
 
-const gear = (id: number, gearType: number) => ({ id, gearType, nickname: `gear ${id}` }) as Gear
+const gear = (id: number, gearType: GearType) =>
+  ({ id: String(id), gearType, nickname: `gear ${id}` }) as unknown as Gear
 
 describe('groupGearsByType', () => {
   const gears = [
@@ -23,10 +24,10 @@ describe('groupGearsByType', () => {
       GEAR_TYPE.SHOES,
       GEAR_TYPE.SKIS,
     ])
-    expect(groups[1]?.gears.map((g) => g.id)).toEqual([1, 3])
+    expect(groups[1]?.gears.map((g) => g.id)).toEqual(['1', '3'])
   })
 
-  it('lists the preferred type first and the rest in ascending type order', () => {
+  it('lists the preferred type first and the rest in gear-type display order', () => {
     const groups = groupGearsByType(gears, GEAR_TYPE.SKIS)
 
     expect(groups.map((group) => group.gearType)).toEqual([
